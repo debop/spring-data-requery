@@ -16,12 +16,14 @@
 
 package org.springframework.data.requery.kotlin.configs
 
+import io.requery.TransactionIsolation
 import io.requery.cache.EmptyEntityCache
 import io.requery.meta.EntityModel
 import io.requery.sql.ConfigurationBuilder
 import io.requery.sql.KotlinEntityDataStore
 import io.requery.sql.SchemaModifier
 import io.requery.sql.TableCreationMode
+import io.requery.sql.TransactionMode
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
@@ -61,9 +63,11 @@ abstract class AbstractRequeryConfiguration {
     fun requeryConfiguration(dataSource: DataSource, entityModel: EntityModel): io.requery.sql.Configuration {
         return ConfigurationBuilder(dataSource, entityModel)
             .setEntityCache(EmptyEntityCache())
-            .setStatementCacheSize(1024)
+            .setStatementCacheSize(0)
             .setBatchUpdateSize(100)
             .addStatementListener(LogbackListener<Any>())
+            .setTransactionMode(TransactionMode.AUTO)
+            .setTransactionIsolation(TransactionIsolation.READ_COMMITTED)
             .build()
     }
 
@@ -113,7 +117,7 @@ abstract class AbstractRequeryConfiguration {
             log.debug { schema.createTablesString(getTableCreationMode()) }
             schema.createTables(getTableCreationMode())
             log.info { "Success to create database schema" }
-        } catch(ignored: Exception) {
+        } catch (ignored: Exception) {
             log.error(ignored) { "Fail to creation database schema." }
         }
     }

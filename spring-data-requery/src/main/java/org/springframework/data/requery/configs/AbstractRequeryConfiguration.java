@@ -23,6 +23,7 @@ import io.requery.sql.ConfigurationBuilder;
 import io.requery.sql.EntityDataStore;
 import io.requery.sql.SchemaModifier;
 import io.requery.sql.TableCreationMode;
+import io.requery.sql.TransactionMode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -81,9 +82,10 @@ public abstract class AbstractRequeryConfiguration {
         return new ConfigurationBuilder(dataSource, entityModel)
             // .useDefaultLogging()
             .setEntityCache(new EmptyEntityCache())
-            .setStatementCacheSize(1024)
+            .setStatementCacheSize(0)
             .setBatchUpdateSize(100)
             .addStatementListener(new LogbackListener<>())
+            .setTransactionMode(TransactionMode.AUTO)
             .setTransactionIsolation(TransactionIsolation.READ_COMMITTED)
             .build();
     }

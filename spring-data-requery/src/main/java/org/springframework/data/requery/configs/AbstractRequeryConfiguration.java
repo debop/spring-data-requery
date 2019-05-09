@@ -16,14 +16,12 @@
 
 package org.springframework.data.requery.configs;
 
-import io.requery.TransactionIsolation;
 import io.requery.cache.EmptyEntityCache;
 import io.requery.meta.EntityModel;
 import io.requery.sql.ConfigurationBuilder;
 import io.requery.sql.EntityDataStore;
 import io.requery.sql.SchemaModifier;
 import io.requery.sql.TableCreationMode;
-import io.requery.sql.TransactionMode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -31,9 +29,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.requery.core.RequeryOperations;
 import org.springframework.data.requery.core.RequeryTemplate;
+import org.springframework.data.requery.core.RequeryTransactionManager;
 import org.springframework.data.requery.listeners.LogbackListener;
 import org.springframework.data.requery.mapping.RequeryMappingContext;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.util.Assert;
 
@@ -80,13 +78,9 @@ public abstract class AbstractRequeryConfiguration {
         Assert.notNull(getEntityModel(), "enittymodel must not be null");
 
         return new ConfigurationBuilder(dataSource, entityModel)
-            // .useDefaultLogging()
             .setEntityCache(new EmptyEntityCache())
-            .setStatementCacheSize(0)
-            .setBatchUpdateSize(100)
+            .setBatchUpdateSize(124)
             .addStatementListener(new LogbackListener<>())
-            .setTransactionMode(TransactionMode.AUTO)
-            .setTransactionIsolation(TransactionIsolation.READ_COMMITTED)
             .build();
     }
 
@@ -117,8 +111,10 @@ public abstract class AbstractRequeryConfiguration {
     }
 
     @Bean
-    public PlatformTransactionManager transactionManager(@Nonnull final DataSource dataSource) {
-        return new DataSourceTransactionManager(dataSource);
+    public PlatformTransactionManager transactionManager(@Nonnull final EntityDataStore<Object> entityDataStore,
+                                                         @Nonnull final DataSource dataSource) {
+//        return new DataSourceTransactionManager(dataSource);
+        return new RequeryTransactionManager(entityDataStore, dataSource);
     }
 
     @Autowired

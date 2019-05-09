@@ -16,6 +16,7 @@
 
 package org.springframework.data.requery.repository;
 
+import io.requery.Transaction;
 import io.requery.meta.Attribute;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
@@ -43,6 +44,10 @@ public interface RequeryRepository<T, ID>
 
     @Autowired
     RequeryOperations getOperations();
+
+    default Transaction transaction() {
+        return getOperations().transaction();
+    }
 
     @Override
     @Nonnull

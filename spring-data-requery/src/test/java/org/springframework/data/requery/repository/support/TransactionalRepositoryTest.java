@@ -16,6 +16,7 @@
 
 package org.springframework.data.requery.repository.support;
 
+import io.requery.sql.EntityDataStore;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
@@ -53,8 +54,9 @@ public class TransactionalRepositoryTest {
 
         @Bean
         @Override
-        public DelegatingTransactionManager transactionManager(@Nonnull final DataSource dataSource) {
-            return new DelegatingTransactionManager(super.transactionManager(dataSource));
+        public DelegatingTransactionManager transactionManager(@Nonnull final EntityDataStore<Object> entityDataStore,
+                                                               @Nonnull final DataSource dataSource) {
+            return new DelegatingTransactionManager(super.transactionManager(entityDataStore, dataSource));
         }
     }
 

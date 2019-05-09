@@ -30,7 +30,6 @@ import org.springframework.data.requery.repository.RequeryRepository;
 import org.springframework.data.requery.repository.support.RequeryRepositoryFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.time.LocalDate;
@@ -42,7 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Slf4j
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { RequeryTestConfiguration.class })
-@Transactional
+//@Transactional
 public class DeclaredRequeryQueryTest {
 
     @Inject RequeryOperations operations;
@@ -83,16 +82,20 @@ public class DeclaredRequeryQueryTest {
 
     @Test
     public void queryWithLimits() {
+        repository.deleteAll();
+
         Set<BasicUser> users = RandomData.randomUsers(10);
         repository.saveAll(users);
 
         assertThat(repository.count()).isGreaterThan(0);
 
-        List<BasicUser> results = repository.findWithLimits(5);
-        assertThat(results).hasSize(5);
+        List<BasicUser> results = repository.findWithLimits(2);
+        assertThat(results).hasSize(2);
 
         List<BasicUser> results2 = repository.findWithLimits(3);
         assertThat(results2).hasSize(3);
+
+        assertThat(repository.findWithLimits(2)).hasSize(2);
     }
 
     @Test
@@ -124,9 +127,9 @@ public class DeclaredRequeryQueryTest {
         assertThat(loaded.get(0).<String>get("name")).isEqualTo(user.getName());
     }
 
-
     @Test
     public void queryByLocalData() {
+        repository.deleteAll();
 
         BasicUser user = RandomData.randomUser();
         repository.save(user);
@@ -135,10 +138,15 @@ public class DeclaredRequeryQueryTest {
         assertThat(loaded).hasSize(1);
         assertThat(loaded.get(0)).isEqualTo(user);
 
+        List<BasicUser> loaded2 = repository.findByBirthday(user.getBirthday());
+        assertThat(loaded2).hasSize(1);
+        assertThat(loaded2.get(0)).isEqualTo(user);
+
         List<BasicUser> notexists = repository.findByBirthday(LocalDate.ofEpochDay(0));
         assertThat(notexists).isEmpty();
     }
 
+    //    @Transactional(readOnly = true)
     interface SampleQueryRepository extends RequeryRepository<BasicUser, Long> {
 
         @Query("select * from basic_user u where u.email = ?")

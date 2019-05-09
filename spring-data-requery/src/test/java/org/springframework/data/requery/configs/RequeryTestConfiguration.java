@@ -29,7 +29,7 @@ import javax.sql.DataSource;
 
 @Slf4j
 @Configuration
-@EnableTransactionManagement(proxyTargetClass = true)
+@EnableTransactionManagement
 public class RequeryTestConfiguration extends AbstractRequeryConfiguration {
 
     @Override
@@ -45,7 +45,7 @@ public class RequeryTestConfiguration extends AbstractRequeryConfiguration {
 
         HikariConfig config = new HikariConfig();
         config.setDriverClassName("org.h2.Driver");
-        config.setJdbcUrl("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false");
+        config.setJdbcUrl("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;MODE=MySQL;");
         config.setUsername("sa");
 
         DataSource dataSource = new HikariDataSource(config);

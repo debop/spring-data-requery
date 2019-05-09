@@ -16,6 +16,7 @@
 
 package org.springframework.data.requery.repository.config;
 
+import io.requery.sql.EntityDataStore;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,8 +53,9 @@ public class CustomRepositoryFactoryConfigTest {
     static class TestConfiguration extends RequeryTestConfiguration {
         @Bean
         @Override
-        public DelegatingTransactionManager transactionManager(@Nonnull final DataSource dataSource) {
-            return new DelegatingTransactionManager(super.transactionManager(dataSource));
+        public DelegatingTransactionManager transactionManager(@Nonnull final EntityDataStore<Object> entityDataStore,
+                                                               @Nonnull final DataSource dataSource) {
+            return new DelegatingTransactionManager(super.transactionManager(entityDataStore, dataSource));
         }
     }
 

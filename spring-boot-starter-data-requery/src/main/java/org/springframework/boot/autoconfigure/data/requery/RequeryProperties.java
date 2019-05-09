@@ -44,7 +44,7 @@ public class RequeryProperties {
     /**
      * Statement cache size
      */
-    private Integer statementCacheSize = 1024;
+    private Integer statementCacheSize = 0;
 
     /**
      * Table creation mode

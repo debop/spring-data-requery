@@ -34,6 +34,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.requery.domain.AbstractDomainTest;
 import org.springframework.data.requery.domain.sample.User;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import javax.annotation.Nonnull;
@@ -48,6 +49,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SuppressWarnings({ "unchecked", "ResultOfMethodCallIgnored" })
 @Slf4j
+@Transactional
 public class PartTreeRequeryQueryTest extends AbstractDomainTest {
 
     @Rule public ExpectedException thrown = ExpectedException.none();

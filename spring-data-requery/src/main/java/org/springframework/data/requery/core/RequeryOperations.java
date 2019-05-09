@@ -16,6 +16,7 @@
 
 package org.springframework.data.requery.core;
 
+import io.requery.Transaction;
 import io.requery.TransactionIsolation;
 import io.requery.meta.Attribute;
 import io.requery.meta.EntityModel;
@@ -64,6 +65,10 @@ public interface RequeryOperations {
 
     default EntityModel getEntityModel() {
         return RequeryUtils.getEntityModel(getDataStore());
+    }
+
+    default Transaction transaction() {
+        return getDataStore().transaction();
     }
 
     @SuppressWarnings("unchecked")

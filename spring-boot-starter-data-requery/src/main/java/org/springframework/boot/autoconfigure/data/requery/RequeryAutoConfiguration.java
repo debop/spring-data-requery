@@ -16,6 +16,7 @@
 
 package org.springframework.boot.autoconfigure.data.requery;
 
+import io.requery.TransactionIsolation;
 import io.requery.cache.WeakEntityCache;
 import io.requery.meta.EntityModel;
 import io.requery.sql.ConfigurationBuilder;
@@ -30,9 +31,10 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.requery.core.RequeryTransactionManager;
 import org.springframework.data.requery.listeners.LogbackListener;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
@@ -48,6 +50,7 @@ import java.lang.reflect.Field;
  */
 @Slf4j
 @Configuration
+@EnableTransactionManagement
 @ConditionalOnBean({ DataSource.class })
 @EnableConfigurationProperties(RequeryProperties.class)
 @AutoConfigureAfter({ DataSourceAutoConfiguration.class })
@@ -92,6 +95,7 @@ public class RequeryAutoConfiguration {
             .setBatchUpdateSize(properties.getBatchUpdateSize())
             .setEntityCache(new WeakEntityCache())
             .addStatementListener(new LogbackListener<>())
+            .setTransactionIsolation(TransactionIsolation.SERIALIZABLE)
             .build();
     }
 
@@ -105,8 +109,10 @@ public class RequeryAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean({ DataSource.class })
-    public PlatformTransactionManager transactionManager(@Nonnull final DataSource dataSource) {
-        return new DataSourceTransactionManager(dataSource);
+    public PlatformTransactionManager transactionManager(@Nonnull final EntityDataStore<Object> entityDataStore,
+                                                         @Nonnull final DataSource dataSource) {
+        // return new DataSourceTransactionManager(dataSource);
+        return new RequeryTransactionManager(entityDataStore, dataSource);
     }
 
     @Autowired io.requery.sql.Configuration configuration;

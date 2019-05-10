@@ -56,6 +56,7 @@ public class InfrastructureConfig extends AbstractRequeryConfiguration {
             .setScriptEncoding("UTF-8")
             .ignoreFailedDrops(true)
             .generateUniqueName(true)
+            .continueOnError(true)
             .build();
     }
 }

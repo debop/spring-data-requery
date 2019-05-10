@@ -57,7 +57,7 @@ public class RequeryTransactionManager extends DataSourceTransactionManager {
 
     @Override
     protected void doCommit(@Nonnull final DefaultTransactionStatus status) {
-        if (entityDataStore.transaction().active()) {
+        if (status.isNewTransaction() && entityDataStore.transaction().active()) {
             log.debug("Commit transaction. status={}", status.getTransaction());
             try {
                 entityDataStore.transaction().commit();
@@ -65,6 +65,7 @@ public class RequeryTransactionManager extends DataSourceTransactionManager {
                 entityDataStore.transaction().close();
             }
         }
+
         super.doCommit(status);
     }
 

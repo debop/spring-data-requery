@@ -33,52 +33,51 @@ public class RequeryTransactionManager extends DataSourceTransactionManager {
         this.entityDataStore = entityDataStore;
     }
 
-
     @Override
     protected void doBegin(@Nonnull final Object transaction, @Nonnull final TransactionDefinition definition) {
-
+        // NOTE: requery 용 Transaction을 쓰지 않도록 해야 spring 의 transaction을 사용한다
+        //
+//        if (!definition.isReadOnly() && !entityDataStore.transaction().active()) {
+//            TransactionIsolation isolation = getTransactionIsolation(definition.getIsolationLevel());
+//
+//            log.info("Begin requery transaction. {}", entityDataStore.transaction().getClass().getSimpleName());
+//            if (isolation != null) {
+//                entityDataStore.transaction().begin(isolation);
+//            } else {
+//                entityDataStore.transaction().begin();
+//            }
+//        }
         log.debug("Begin transaction... definition={}", definition);
-
-        JdbcTransactionObjectSupport txObject = (JdbcTransactionObjectSupport) transaction;
-
         super.doBegin(transaction, definition);
-
-        if (txObject.hasConnectionHolder() && !entityDataStore.transaction().active()) {
-            TransactionIsolation isolation = getTransactionIsolation(definition.getIsolationLevel());
-
-            log.debug("Begin requery transaction. {}", entityDataStore.transaction().getClass().getSimpleName());
-            if (isolation != null) {
-                entityDataStore.transaction().begin(isolation);
-            } else {
-                entityDataStore.transaction().begin();
-            }
-        }
     }
 
     @Override
     protected void doCommit(@Nonnull final DefaultTransactionStatus status) {
-        if (status.isNewTransaction() && entityDataStore.transaction().active()) {
-            log.debug("Commit transaction. status={}", status.getTransaction());
+        if (status.isNewSynchronization() && entityDataStore.transaction().active()) {
+            log.info("Commit requery transaction. status={}", status.getTransaction());
             try {
                 entityDataStore.transaction().commit();
             } finally {
                 entityDataStore.transaction().close();
+                status.setCompleted();
             }
         }
-
+        log.info("Commit transaction. status={}", status);
         super.doCommit(status);
     }
 
     @Override
     protected void doRollback(@Nonnull final DefaultTransactionStatus status) {
         if (entityDataStore.transaction().active()) {
-            log.warn("Rollback transaction. status={}", status);
+            log.warn("Rollback requery transaction!!! status={}", status);
             try {
                 entityDataStore.transaction().rollback();
             } finally {
                 entityDataStore.transaction().close();
+                status.setRollbackOnly();
             }
         }
+        log.warn("Rollback transaction!!! status={}", status);
         super.doRollback(status);
     }
 

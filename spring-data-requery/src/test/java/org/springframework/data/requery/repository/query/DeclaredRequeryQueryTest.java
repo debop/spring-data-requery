@@ -30,6 +30,7 @@ import org.springframework.data.requery.repository.RequeryRepository;
 import org.springframework.data.requery.repository.support.RequeryRepositoryFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.time.LocalDate;
@@ -41,7 +42,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Slf4j
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { RequeryTestConfiguration.class })
-//@Transactional
+@Transactional
 public class DeclaredRequeryQueryTest {
 
     @Inject RequeryOperations operations;
@@ -146,7 +147,7 @@ public class DeclaredRequeryQueryTest {
         assertThat(notexists).isEmpty();
     }
 
-    //    @Transactional(readOnly = true)
+    @Transactional(readOnly = true)
     interface SampleQueryRepository extends RequeryRepository<BasicUser, Long> {
 
         @Query("select * from basic_user u where u.email = ?")

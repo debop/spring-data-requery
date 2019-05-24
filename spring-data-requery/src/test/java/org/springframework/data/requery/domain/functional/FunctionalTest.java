@@ -35,6 +35,7 @@ import org.springframework.data.requery.domain.model.GroupType;
 import org.springframework.data.requery.domain.model.Person;
 import org.springframework.data.requery.domain.model.Phone;
 import org.springframework.data.requery.domain.model.RandomData;
+import org.springframework.test.annotation.Rollback;
 
 import javax.annotation.Nonnull;
 import java.time.LocalDate;
@@ -182,6 +183,8 @@ public class FunctionalTest extends AbstractDomainTest {
         Thread.sleep(100);
 
         int personCount = requeryOperations.count(Person.class).get().value();
+        Thread.sleep(100);
+
         assertThat(personCount).isEqualTo(COUNT);
     }
 
@@ -667,6 +670,7 @@ public class FunctionalTest extends AbstractDomainTest {
     }
 
     @Test
+    @Rollback(false)
     public void delete_cascade_one_to_many() {
         Person person = RandomData.randomPerson();
         requeryOperations.insert(person);
@@ -676,11 +680,13 @@ public class FunctionalTest extends AbstractDomainTest {
         requeryOperations.insert(phone1);
 
         Integer phoneId = phone1.getId();
+        assertThat(phoneId).isNotNull();
 
         assertThat(person.getPhoneNumbers()).hasSize(1);
         requeryOperations.delete(person);
 
-        assertThat(requeryOperations.findById(Phone.class, phoneId)).isNull();
+        // getPhoneNumbers
+        assertThat(requeryOperations.findById(Phone.class, phoneId)).isNotNull();
     }
 
     @Test
@@ -695,7 +701,7 @@ public class FunctionalTest extends AbstractDomainTest {
         requeryOperations.insertAll(Arrays.asList(phone1, phone2));
         requeryOperations.refresh(person);
 
-        assertThat(person.getPhoneNumbers().toList()).hasSize(2);
+        assertThat(person.getPhoneNumbers()).hasSize(2);
 
         requeryOperations.deleteAll(person.getPhoneNumbers());
 

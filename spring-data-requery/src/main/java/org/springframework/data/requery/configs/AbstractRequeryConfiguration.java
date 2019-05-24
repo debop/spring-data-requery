@@ -37,6 +37,7 @@ import org.springframework.util.Assert;
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
+import java.util.concurrent.Executors;
 
 /**
  * Spring 용 Requery 환경설정 파일입니다.
@@ -79,6 +80,7 @@ public abstract class AbstractRequeryConfiguration {
         return new ConfigurationBuilder(dataSource, entityModel)
 //            .setEntityCache(new EmptyEntityCache())
             .addStatementListener(new LogbackListener<>())
+            .setWriteExecutor(Executors.newSingleThreadExecutor())
             .build();
     }
 

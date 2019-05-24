@@ -85,14 +85,14 @@ public class RequeryTransactionManager extends AbstractPlatformTransactionManage
 
     @Override
     protected void doBegin(@Nonnull final Object transaction, @Nonnull final TransactionDefinition definition) {
+        if (enforceReadOnly || definition.isReadOnly()) {
+            return;
+        }
         log.debug("Begin transaction... definition={}, timeout={}, readOnly={}",
                   definition, definition.getTimeout(), definition.isReadOnly());
 
         RequeryTransactionObject txObject = (RequeryTransactionObject) transaction;
         try {
-            if (enforceReadOnly || definition.isReadOnly()) {
-                return;
-            }
             if (!txObject.hasTransactionHolder()) {
                 txObject.setTransactionHolder(new TransactionHolder(entityDataStore.transaction()), true);
             }
@@ -101,11 +101,8 @@ public class RequeryTransactionManager extends AbstractPlatformTransactionManage
             if (timeout != TransactionDefinition.TIMEOUT_DEFAULT) {
                 txObject.getTransactionHolder().setTimeoutInSeconds(timeout);
             }
-
-            if (!txObject.getTransactionHolder().isTransactionActive()) {
-                txObject.getTransactionHolder().getCurrentTransaction().begin();
-            }
             if (txObject.isNewTransactionHolder()) {
+                txObject.getTransactionHolder().getCurrentTransaction().begin();
                 TransactionSynchronizationManager.bindResource(entityDataStore, txObject.getTransactionHolder());
             }
         } catch (Throwable ex) {
@@ -132,12 +129,10 @@ public class RequeryTransactionManager extends AbstractPlatformTransactionManage
 
     @Override
     protected void doCommit(@Nonnull final DefaultTransactionStatus status) {
-        log.info("Commit transaction. status={}", status);
-        RequeryTransactionObject txObject = (RequeryTransactionObject) status.getTransaction();
-        log.info("Commit transaction. txObject={}", txObject);
         try {
-
+            RequeryTransactionObject txObject = (RequeryTransactionObject) status.getTransaction();
             if (txObject.hasTransactionHolder() && txObject.getTransactionHolder().isTransactionActive()) {
+                log.info("Commit transaction. transaction={}", txObject.getTransactionHolder().getCurrentTransaction());
                 txObject.getTransactionHolder().getCurrentTransaction().commit();
             }
         } catch (Exception ex) {
@@ -147,11 +142,10 @@ public class RequeryTransactionManager extends AbstractPlatformTransactionManage
 
     @Override
     protected void doRollback(@Nonnull final DefaultTransactionStatus status) {
-        log.warn("Rollback transaction!!! status={}", status);
-        RequeryTransactionObject txObject = (RequeryTransactionObject) status.getTransaction();
-        log.info("Rollback transaction!!! txObject={}", txObject);
         try {
+            RequeryTransactionObject txObject = (RequeryTransactionObject) status.getTransaction();
             if (txObject.hasTransactionHolder() && txObject.getTransactionHolder().isTransactionActive()) {
+                log.info("Rollback transaction!!! transaction={}", txObject.getTransactionHolder().getCurrentTransaction());
                 txObject.getTransactionHolder().getCurrentTransaction().rollback();
             }
         } catch (Exception ex) {

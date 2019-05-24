@@ -127,7 +127,6 @@ public class DeclaredRequeryQuery extends AbstractRequeryQuery {
 
     @Nonnull
     private Object[] extractValues(int pageableIndex, @Nonnull final Object[] parameters) {
-
         Object[] values = (pageableIndex >= 0) ? new Object[parameters.length - 1] : parameters;
 
         int j = 0;

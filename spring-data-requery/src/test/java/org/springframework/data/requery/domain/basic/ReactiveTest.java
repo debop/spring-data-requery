@@ -25,6 +25,7 @@ import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveSupport;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -44,6 +45,7 @@ import static org.assertj.core.api.Fail.fail;
 /**
  * @author Diego on 2018. 6. 12..
  */
+@Ignore("개발 중이다.")
 @Slf4j
 public class ReactiveTest extends AbstractDomainTest {
 

@@ -762,31 +762,32 @@ public class FunctionalQueryTest extends AbstractDomainTest {
 
         List<Long> resultIds = new ArrayList<>();
 
-        Result<Tuple> result = requeryOperations.raw("select * from Person");
-        List<Tuple> rows = result.toList();
-        assertThat(rows).hasSize(count);
+        List<Tuple> result = requeryOperations.raw("select * from Person").toList();
+        assertThat(result).hasSize(count);
 
-        for (int index = 0; index < rows.size(); index++) {
-            Tuple row = rows.get(index);
+        for (int index = 0; index < result.size(); index++) {
+            Tuple row = result.get(index);
             String name = row.get("name");
             assertThat(name).isEqualTo(people.get(index).getName());
             Long id = row.<Long>get("personId");
             assertThat(id).isEqualTo(people.get(index).getId());
             resultIds.add(id);
         }
+        assertThat(resultIds).hasSize(count);
 
-        result = requeryOperations.raw("select * from Person WHERE personId in ?", resultIds);
-        rows = result.toList();
-        List<Long> ids = rows.stream().map(it -> it.<Long>get("personId")).collect(Collectors.toList());
+        result = requeryOperations.raw("select * from Person WHERE personId in ?", resultIds).toList();
+        List<Long> ids = result.stream().map(it -> it.<Long>get("personId")).collect(Collectors.toList());
+        log.debug("ids={}", ids);
         assertThat(ids).isEqualTo(resultIds);
 
-        result = requeryOperations.raw("select count(*) from Person");
-        int number = result.first().<Number>get(0).intValue();
+        result = requeryOperations.raw("select count(*) from Person").toList();
+        int number = result.get(0).<Number>get(0).intValue();
         assertThat(number).isEqualTo(count);
 
-        result = requeryOperations.raw("select * from Person WHERE personId = ?", people.get(0));
-        assertThat(result.first().<Long>get("personId")).isEqualTo(people.get(0).getId());
-
+        result = requeryOperations.raw("select * from Person WHERE personId = ?", people.get(0)).toList();
+        log.debug("load person...");
+        log.debug("person={}", result);
+        assertThat(result.get(0).<Long>get("personId")).isEqualTo(people.get(0).getId());
     }
 
     @Test

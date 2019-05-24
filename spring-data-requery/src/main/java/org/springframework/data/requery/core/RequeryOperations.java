@@ -56,7 +56,6 @@ import static org.springframework.data.requery.utils.RequeryUtils.unwrap;
  * @since 18. 6. 4
  */
 @ParametersAreNonnullByDefault
-@Transactional(readOnly = true)
 public interface RequeryOperations {
 
     @Nonnull
@@ -197,7 +196,6 @@ public interface RequeryOperations {
         return getDataStore().delete(entityType);
     }
 
-    @Transactional
     default <E> void delete(@Nonnull final E entity) {
         getDataStore().delete(entity);
     }
@@ -248,19 +246,15 @@ public interface RequeryOperations {
         return getDataStore().raw(entityType, query, parameters);
     }
 
-    @Transactional
     default <V> V runInTransaction(@Nonnull final Callable<V> callable) {
         return runInTransaction(callable, null);
     }
 
-    @Transactional
     <V> V runInTransaction(@Nonnull final Callable<V> callable, @Nullable final TransactionIsolation isolation);
 
-    @Transactional
     default <V> V withTransaction(@Nonnull final Function<EntityDataStore<Object>, V> block) {
         return withTransaction(block, null);
     }
 
-    @Transactional
     <V> V withTransaction(@Nonnull final Function<EntityDataStore<Object>, V> block, @Nullable final TransactionIsolation isolation);
 }

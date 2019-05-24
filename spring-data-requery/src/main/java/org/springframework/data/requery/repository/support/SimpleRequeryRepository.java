@@ -91,34 +91,35 @@ public class SimpleRequeryRepository<T, ID> implements RequeryRepositoryImplemen
     }
 
 
+    @Transactional
     @Override
     @Nonnull
     public <S extends T> S insert(@Nonnull final S entity) {
         return operations.insert(entity);
     }
 
-
+    @Transactional
     @Override
     @Nonnull
     public <S extends T, K> K insert(@Nonnull final S entity, @Nonnull final Class<K> keyClass) {
         return operations.insert(entity, keyClass);
     }
 
-
+    @Transactional
     @Override
     @Nonnull
     public <S extends T> List<S> insert(@Nonnull final Iterable<S> entities) {
         return operations.insertAll(entities);
     }
 
-
+    @Transactional
     @Override
     @Nonnull
     public <S extends T, K> List<K> insert(@Nonnull final Iterable<S> entities, @Nonnull final Class<K> keyClass) {
         return operations.insertAll(entities, keyClass);
     }
 
-
+    @Transactional
     @Override
     @Nonnull
     public <S extends T> S upsert(@Nonnull final S entity) {
@@ -148,13 +149,13 @@ public class SimpleRequeryRepository<T, ID> implements RequeryRepositoryImplemen
         return operations.refreshAllProperties(entity);
     }
 
-
+    @Transactional
     @Override
     public void deleteInBatch(@Nonnull final Iterable<T> entities) {
         operations.deleteAll(entities);
     }
 
-
+    @Transactional
     @Override
     public int deleteAllInBatch() {
         return operations.delete(domainClass).get().value();
@@ -214,14 +215,14 @@ public class SimpleRequeryRepository<T, ID> implements RequeryRepositoryImplemen
         }
     }
 
-
+    @Transactional
     @Nonnull
     @Override
     public <S extends T> S save(@Nonnull final S entity) {
         return operations.upsert(entity);
     }
 
-
+    @Transactional
     @Nonnull
     @Override
     public <S extends T> List<S> saveAll(@Nonnull final Iterable<S> entities) {
@@ -280,12 +281,12 @@ public class SimpleRequeryRepository<T, ID> implements RequeryRepositoryImplemen
             .longValue();
     }
 
-    @SuppressWarnings("unchecked")
-
+    @Transactional
     @Override
     public void deleteById(@Nonnull final ID id) {
         log.debug("Delete {} entity by id. id={}", domainClassName, id);
 
+        @SuppressWarnings("unchecked")
         NamedExpression<ID> keyExpr = (NamedExpression<ID>) getKeyExpression(domainClass);
 
         Integer deletedCount = operations
@@ -297,19 +298,19 @@ public class SimpleRequeryRepository<T, ID> implements RequeryRepositoryImplemen
         log.debug("Deleted entity={}, count={}", domainClassName, deletedCount);
     }
 
-
+    @Transactional
     @Override
     public void delete(@Nonnull final T entity) {
         operations.delete(entity);
     }
 
-
+    @Transactional
     @Override
     public void deleteAll(@Nonnull final Iterable<? extends T> entities) {
         operations.deleteAll(entities);
     }
 
-
+    @Transactional
     @Override
     public void deleteAll() {
         log.debug("Delete All entities. entity name={} ...", domainClassName);

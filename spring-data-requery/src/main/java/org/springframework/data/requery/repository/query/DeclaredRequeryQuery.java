@@ -28,6 +28,7 @@ import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.data.requery.annotation.Query;
 import org.springframework.data.requery.core.RequeryOperations;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -36,7 +37,7 @@ import java.util.List;
 
 /**
  * {@link Query} annotation이 정의된 메소드, interface default method, custom defined method를 실행하는 {@link RepositoryQuery}
- *
+ * <p>
  * FIXME: Declared Query를 실행할 때, Transaction 처리 시, connection이 닫혀버린다. 이를 유지 할 수 있는 기능을 넣어야 한다.
  *
  * @author debop
@@ -64,6 +65,7 @@ public class DeclaredRequeryQuery extends AbstractRequeryQuery {
 
     @SuppressWarnings("unchecked")
     @Override
+    @Transactional(readOnly = true)
     public Object execute(@Nonnull final Object[] parameters) {
         // return operations.runInTransaction(() -> executeInTransaction(parameters));
         return executeInTransaction(parameters);

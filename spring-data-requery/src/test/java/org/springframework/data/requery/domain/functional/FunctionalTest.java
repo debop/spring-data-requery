@@ -22,7 +22,6 @@ import io.requery.proxy.EntityProxy;
 import io.requery.proxy.PropertyState;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.data.requery.domain.AbstractDomainTest;
 import org.springframework.data.requery.domain.EntityState;
@@ -366,7 +365,7 @@ public class FunctionalTest extends AbstractDomainTest {
         assertThat(requeryOperations.count(Address.class).get().value()).isEqualTo(0);
     }
 
-    @Ignore("Spring @Transactional과 requery 자체 transaction을 함께 쓰지 마세요")
+    // @Ignore("Spring @Transactional과 requery 자체 transaction을 함께 쓰지 마세요")
     @Test
     public void rollback_transaction() {
         List<Long> ids = new ArrayList<>();

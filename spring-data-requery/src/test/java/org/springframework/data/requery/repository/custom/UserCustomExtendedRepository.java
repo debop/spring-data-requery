@@ -25,11 +25,13 @@ import java.util.Optional;
 
 public interface UserCustomExtendedRepository extends CustomGenericRepository<BasicUser, Long> {
 
+    // NOTE: Not support timeout in requery transaction.
     @Transactional(readOnly = false, timeout = 100)
     @Override
     @Nonnull
     List<BasicUser> findAll();
 
+    // NOTE: Not support timeout in requery transaction.
     @Transactional(readOnly = false, timeout = 10)
     @Override
     @Nonnull

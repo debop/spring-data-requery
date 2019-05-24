@@ -16,7 +16,6 @@
 
 package org.springframework.data.requery.configs;
 
-import io.requery.cache.EmptyEntityCache;
 import io.requery.meta.EntityModel;
 import io.requery.sql.ConfigurationBuilder;
 import io.requery.sql.EntityDataStore;
@@ -78,8 +77,7 @@ public abstract class AbstractRequeryConfiguration {
         Assert.notNull(getEntityModel(), "enittymodel must not be null");
 
         return new ConfigurationBuilder(dataSource, entityModel)
-            .setEntityCache(new EmptyEntityCache())
-            .setBatchUpdateSize(124)
+//            .setEntityCache(new EmptyEntityCache())
             .addStatementListener(new LogbackListener<>())
             .build();
     }
@@ -111,10 +109,8 @@ public abstract class AbstractRequeryConfiguration {
     }
 
     @Bean
-    public PlatformTransactionManager transactionManager(@Nonnull final EntityDataStore<Object> entityDataStore,
-                                                         @Nonnull final DataSource dataSource) {
-//        return new DataSourceTransactionManager(dataSource);
-        return new RequeryTransactionManager(entityDataStore, dataSource);
+    public PlatformTransactionManager transactionManager(@Nonnull final EntityDataStore<Object> entityDataStore) {
+        return new RequeryTransactionManager(entityDataStore);
     }
 
     @Autowired

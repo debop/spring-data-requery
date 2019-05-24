@@ -23,8 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.requery.domain.Models;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
@@ -45,23 +43,24 @@ public class RequeryTestConfiguration extends AbstractRequeryConfiguration {
 //        return PostgreSQLTestContainer.getDataSource();
 //        return MySQLTestContainer.getDataSource();
 
-//        HikariConfig config = new HikariConfig();
-//        config.setDriverClassName("org.h2.Driver");
-//        config.setJdbcUrl("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;MODE=MySQL;");
-//        config.setUsername("sa");
-//
-//        DataSource dataSource = new HikariDataSource(config);
-//        log.trace("DataSource={}", dataSource);
-//        return dataSource;
+        HikariConfig config = new HikariConfig();
+        config.setDriverClassName("org.h2.Driver");
+        config.setJdbcUrl("jdbc:h2:mem:requery;DB_CLOSE_DELAY=-1;MODE=MySQL;");
+        config.setAutoCommit(false);
+        config.setUsername("sa");
 
-        return new EmbeddedDatabaseBuilder()
-            .setName("data")
-            .setType(EmbeddedDatabaseType.H2)
-            .setScriptEncoding("UTF-8")
-            .ignoreFailedDrops(true)
-            .generateUniqueName(true)
-            .continueOnError(true)
-            .build();
+        DataSource dataSource = new HikariDataSource(config);
+        log.trace("DataSource={}", dataSource);
+        return dataSource;
+
+//        return new EmbeddedDatabaseBuilder()
+//            .setName("data")
+//            .setType(EmbeddedDatabaseType.H2)
+//            .setScriptEncoding("UTF-8")
+//            .ignoreFailedDrops(true)
+//            .generateUniqueName(true)
+//            .continueOnError(true)
+//            .build();
 
     }
 }

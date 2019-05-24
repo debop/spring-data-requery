@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.requery.configs.RequeryTestConfiguration;
+import org.springframework.data.requery.core.RequeryOperations;
 import org.springframework.data.requery.domain.RandomData;
 import org.springframework.data.requery.repository.config.EnableRequeryRepositories;
 import org.springframework.data.requery.repository.sample.basic.BasicUserRepository;
@@ -35,10 +36,12 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
-import javax.sql.DataSource;
+import javax.annotation.Nullable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -50,28 +53,47 @@ public class TransactionalRepositoryTest {
 
     @Configuration
     @EnableRequeryRepositories(basePackageClasses = { BasicUserRepository.class })
+    @EnableTransactionManagement(proxyTargetClass = true)
     static class TestConfiguration extends RequeryTestConfiguration {
 
         @Bean
         @Override
-        public DelegatingTransactionManager transactionManager(@Nonnull final EntityDataStore<Object> entityDataStore,
-                                                               @Nonnull final DataSource dataSource) {
-            return new DelegatingTransactionManager(super.transactionManager(entityDataStore, dataSource));
+        public DelegatingTransactionManager transactionManager(@Nonnull final EntityDataStore<Object> entityDataStore) {
+            return new DelegatingTransactionManager(super.transactionManager(entityDataStore));
         }
     }
 
     @Autowired BasicUserRepository repository;
     @Autowired DelegatingTransactionManager transactionManager;
+    @Autowired RequeryOperations operations;
 
     @Before
     public void setup() {
         transactionManager.resetCount();
     }
 
-//    @After
-//    public void tearDown() {
-//        repository.deleteAll();
-//    }
+    @Test
+    public void _0_transaction_rollback() {
+        repository.deleteAll();
+        try {
+            runForRollback();
+        } catch (Exception e) {
+            log.error("Should rollback !!!", e);
+        }
+    }
+
+    @Test
+    public void _1_verify_rollback() {
+        assertThat(repository.findAll().size()).isZero();
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    void runForRollback() {
+        repository.save(RandomData.randomUser());
+        assertThat(transactionManager.getTransactionRequests()).isGreaterThan(0);
+
+        throw new RuntimeException("Boom!");
+    }
 
     @Test
     public void simpleManipulatingOperation() {
@@ -104,29 +126,32 @@ public class TransactionalRepositoryTest {
         private final PlatformTransactionManager txManager;
         private int transactionRequests;
         private TransactionDefinition definition;
+        private TransactionStatus status;
 
         public DelegatingTransactionManager(PlatformTransactionManager txManager) {
             this.txManager = txManager;
         }
 
         @Override
-        public TransactionStatus getTransaction(TransactionDefinition definition) throws TransactionException {
+        @Nonnull
+        public TransactionStatus getTransaction(@Nullable TransactionDefinition definition) throws TransactionException {
             this.transactionRequests++;
             this.definition = definition;
 
             log.info("Get transaction. transactionRequests={}, definition={}", transactionRequests, definition);
 
-            return txManager.getTransaction(definition);
+            status = txManager.getTransaction(definition);
+            return status;
         }
 
         @Override
-        public void commit(TransactionStatus status) throws TransactionException {
+        public void commit(@Nonnull final TransactionStatus status) throws TransactionException {
             log.info("Commit transaction. status={}", status);
             txManager.commit(status);
         }
 
         @Override
-        public void rollback(TransactionStatus status) throws TransactionException {
+        public void rollback(@Nonnull final TransactionStatus status) throws TransactionException {
             log.info("Rollback transaction. status={}", status);
             txManager.rollback(status);
         }

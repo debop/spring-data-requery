@@ -35,6 +35,7 @@ import org.springframework.data.requery.core.RequeryTransactionManager;
 import org.springframework.data.requery.listeners.LogbackListener;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
@@ -74,6 +75,7 @@ public class RequeryAutoConfiguration {
             String className = StringUtils.stripFilenameExtension(modelFullName);
             String modelName = StringUtils.getFilenameExtension(modelFullName);
             log.debug("Entity model name={}", modelFullName);
+            Assert.state(!StringUtils.isEmpty(modelName), "modeulName should not be empty.");
 
             Class<?> clazz = ClassUtils.forName(className, Thread.currentThread().getContextClassLoader());
 
@@ -109,10 +111,8 @@ public class RequeryAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean({ DataSource.class })
-    public PlatformTransactionManager transactionManager(@Nonnull final EntityDataStore<Object> entityDataStore,
-                                                         @Nonnull final DataSource dataSource) {
-        // return new DataSourceTransactionManager(dataSource);
-        return new RequeryTransactionManager(entityDataStore, dataSource);
+    public PlatformTransactionManager transactionManager(@Nonnull final EntityDataStore<Object> entityDataStore) {
+        return new RequeryTransactionManager(entityDataStore);
     }
 
     @Autowired io.requery.sql.Configuration configuration;

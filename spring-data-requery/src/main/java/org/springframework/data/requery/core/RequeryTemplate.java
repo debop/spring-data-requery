@@ -22,6 +22,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.requery.RequeryExecutionException;
 import org.springframework.data.requery.mapping.RequeryMappingContext;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import javax.annotation.Nonnull;
@@ -37,6 +38,7 @@ import java.util.function.Function;
  */
 @Slf4j
 @Getter
+@Transactional(readOnly = true)
 public class RequeryTemplate implements RequeryOperations {
 
     private final EntityDataStore<Object> dataStore;

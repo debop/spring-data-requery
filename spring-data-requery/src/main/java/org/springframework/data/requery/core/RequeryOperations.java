@@ -38,6 +38,7 @@ import io.requery.sql.EntityDataStore;
 import org.springframework.data.requery.mapping.RequeryMappingContext;
 import org.springframework.data.requery.utils.Iterables;
 import org.springframework.data.requery.utils.RequeryUtils;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -55,6 +56,7 @@ import static org.springframework.data.requery.utils.RequeryUtils.unwrap;
  * @since 18. 6. 4
  */
 @ParametersAreNonnullByDefault
+@Transactional(readOnly = true)
 public interface RequeryOperations {
 
     @Nonnull
@@ -110,39 +112,54 @@ public interface RequeryOperations {
         return Iterables.toList(getDataStore().refresh(entities, attributes));
     }
 
+    /**
+     * Refresh Lazy initialized properties and associations
+     *
+     * @param entity
+     * @param <E>
+     * @return
+     */
     default <E> E refreshAllProperties(@Nonnull final E entity) {
         return getDataStore().refreshAll(entity);
     }
 
+    @Transactional
     default <E> E upsert(@Nonnull final E entity) {
         return getDataStore().upsert(entity);
     }
 
+    @Transactional
     default <E> List<E> upsertAll(@Nonnull final Iterable<E> entities) {
         return Iterables.toList(getDataStore().upsert(entities));
     }
 
+    @Transactional
     default <E> E insert(@Nonnull final E entity) {
         return getDataStore().insert(entity);
     }
 
+    @Transactional
     default <E, K> K insert(@Nonnull final E entity, @Nonnull final Class<K> keyClass) {
         return getDataStore().insert(entity, keyClass);
     }
 
+    @Transactional
     default <E> Insertion<? extends Result<Tuple>> insert(@Nonnull final Class<E> entityType) {
         return getDataStore().insert(entityType);
     }
 
     @SuppressWarnings("unchecked")
+    @Transactional
     default <E> InsertInto<? extends Result<Tuple>> insert(@Nonnull final Class<E> entityType, QueryAttribute<E, ?>... attributes) {
         return getDataStore().insert(entityType, attributes);
     }
 
+    @Transactional
     default <E> List<E> insertAll(@Nonnull final Iterable<E> entities) {
         return Iterables.toList(getDataStore().insert(entities));
     }
 
+    @Transactional
     default <E, K> List<K> insertAll(@Nonnull final Iterable<E> entities, @Nonnull final Class<K> keyClass) {
         return Iterables.toList(getDataStore().insert(entities, keyClass));
     }
@@ -152,10 +169,12 @@ public interface RequeryOperations {
         return getDataStore().update();
     }
 
+    @Transactional
     default <E> E update(@Nonnull final E entity) {
         return getDataStore().update(entity);
     }
 
+    @Transactional
     default <E> E update(@Nonnull final E entity, final Attribute<?, ?>... attributes) {
         return getDataStore().update(entity, attributes);
     }
@@ -164,9 +183,11 @@ public interface RequeryOperations {
         return getDataStore().update(entityType);
     }
 
+    @Transactional
     default <E> List<E> updateAll(@Nonnull final Iterable<E> entities) {
         return Iterables.toList(getDataStore().update(entities));
     }
+
 
     default Deletion<? extends Scalar<Integer>> delete() {
         return getDataStore().delete();
@@ -176,14 +197,17 @@ public interface RequeryOperations {
         return getDataStore().delete(entityType);
     }
 
+    @Transactional
     default <E> void delete(@Nonnull final E entity) {
         getDataStore().delete(entity);
     }
 
+    @Transactional
     default <E> void deleteAll(@Nonnull final Iterable<E> entities) {
         getDataStore().delete(entities);
     }
 
+    @Transactional
     default <E> Integer deleteAll(@Nonnull final Class<E> entityType) {
         return getDataStore().delete(entityType).get().value();
     }
@@ -224,15 +248,19 @@ public interface RequeryOperations {
         return getDataStore().raw(entityType, query, parameters);
     }
 
+    @Transactional
     default <V> V runInTransaction(@Nonnull final Callable<V> callable) {
         return runInTransaction(callable, null);
     }
 
+    @Transactional
     <V> V runInTransaction(@Nonnull final Callable<V> callable, @Nullable final TransactionIsolation isolation);
 
+    @Transactional
     default <V> V withTransaction(@Nonnull final Function<EntityDataStore<Object>, V> block) {
         return withTransaction(block, null);
     }
 
+    @Transactional
     <V> V withTransaction(@Nonnull final Function<EntityDataStore<Object>, V> block, @Nullable final TransactionIsolation isolation);
 }

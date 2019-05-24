@@ -145,7 +145,7 @@ public class RequeryTransactionManager extends AbstractPlatformTransactionManage
         try {
             RequeryTransactionObject txObject = (RequeryTransactionObject) status.getTransaction();
             if (txObject.hasTransactionHolder() && txObject.getTransactionHolder().isTransactionActive()) {
-                log.info("Rollback transaction!!! transaction={}", txObject.getTransactionHolder().getCurrentTransaction());
+                log.warn("Rollback transaction!!! transaction={}", txObject.getTransactionHolder().getCurrentTransaction());
                 txObject.getTransactionHolder().getCurrentTransaction().rollback();
             }
         } catch (Exception ex) {

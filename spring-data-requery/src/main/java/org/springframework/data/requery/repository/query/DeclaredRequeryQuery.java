@@ -28,6 +28,7 @@ import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.data.requery.annotation.Query;
 import org.springframework.data.requery.core.RequeryOperations;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
@@ -65,17 +66,15 @@ public class DeclaredRequeryQuery extends AbstractRequeryQuery {
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
     public Object execute(@Nonnull final Object[] parameters) {
-        // return operations.runInTransaction(() -> executeInTransaction(parameters));
-        return executeInTransaction(parameters);
+        return executeOutTransaction(parameters);
     }
 
     @SuppressWarnings("unchecked")
-    private Object executeInTransaction(@Nonnull final Object[] parameters) {
+    private Object executeOutTransaction(@Nonnull final Object[] parameters) {
 
         Object resultSet = null;
-
         String query = getRawQuery();
 
         log.debug("Execute queryMethod={}, return type={}, query={}", getQueryMethod().getName(), getQueryMethod().getReturnType(), query);
@@ -170,7 +169,9 @@ public class DeclaredRequeryQuery extends AbstractRequeryQuery {
         if (StringUtils.hasText(countQuery)) {
             try {
                 Result<Tuple> result = operations.raw(countQuery, values);
-                return result.first().get(0);
+                long count = result.first().get(0);
+                result.close();
+                return count;
             } catch (Exception e) {
                 log.error("Fail to retrieve count. query={}", query, e);
                 return 0L;
@@ -190,21 +191,24 @@ public class DeclaredRequeryQuery extends AbstractRequeryQuery {
     private Object castResult(@Nonnull final Result<?> result, @Nonnull final Pageable pageable, final Long totals) {
         // TODO: List<Tuple> 인 경우 returned type 으로 변경해야 한다.
 
+        Object casted;
         if (getQueryMethod().isCollectionQuery()) {
-            return result.toList();
+            casted = result.toList();
         } else if (getQueryMethod().isStreamQuery()) {
-            return result.stream();
+            casted = result.stream();
         } else if (getQueryMethod().isPageQuery()) {
             List<?> contents = result.toList();
             if (pageable.isPaged()) {
                 log.trace("Cast result to Page. totals={}, contents={}, contents size={}", totals, contents, contents.size());
-                return new PageImpl<>(contents, pageable, totals);
+                casted = new PageImpl<>(contents, pageable, totals);
             } else {
-                return new PageImpl<>(result.toList());
+                casted = new PageImpl<>(result.toList());
             }
         } else {
-            return RequeryResultConverter.convertResult(result.firstOrNull());
+            casted = RequeryResultConverter.convertResult(result.firstOrNull());
         }
+        result.close();
+        return casted;
     }
 
     @Nonnull

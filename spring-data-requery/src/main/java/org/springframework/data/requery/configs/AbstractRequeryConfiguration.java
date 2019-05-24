@@ -16,6 +16,7 @@
 
 package org.springframework.data.requery.configs;
 
+import io.requery.cache.EmptyEntityCache;
 import io.requery.meta.EntityModel;
 import io.requery.sql.ConfigurationBuilder;
 import io.requery.sql.EntityDataStore;
@@ -37,7 +38,6 @@ import org.springframework.util.Assert;
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
-import java.util.concurrent.Executors;
 
 /**
  * Spring 용 Requery 환경설정 파일입니다.
@@ -78,9 +78,8 @@ public abstract class AbstractRequeryConfiguration {
         Assert.notNull(getEntityModel(), "enittymodel must not be null");
 
         return new ConfigurationBuilder(dataSource, entityModel)
-//            .setEntityCache(new EmptyEntityCache())
+            .setEntityCache(new EmptyEntityCache())
             .addStatementListener(new LogbackListener<>())
-            .setWriteExecutor(Executors.newSingleThreadExecutor())
             .build();
     }
 

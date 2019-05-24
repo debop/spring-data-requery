@@ -42,6 +42,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -262,6 +263,9 @@ public class SimpleRequeryRepository<T, ID> implements RequeryRepositoryImplemen
         HashSet<ID> idSet = new HashSet<>();
         for (ID id : ids) {
             idSet.add(id);
+        }
+        if (idSet.isEmpty()) {
+            return Collections.emptyList();
         }
         NamedExpression<ID> keyExpr = (NamedExpression<ID>) getKeyExpression(domainClass);
 

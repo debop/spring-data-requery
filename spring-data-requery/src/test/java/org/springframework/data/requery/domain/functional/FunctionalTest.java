@@ -22,6 +22,7 @@ import io.requery.proxy.EntityProxy;
 import io.requery.proxy.PropertyState;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.data.requery.domain.AbstractDomainTest;
 import org.springframework.data.requery.domain.EntityState;
@@ -35,7 +36,7 @@ import org.springframework.data.requery.domain.model.GroupType;
 import org.springframework.data.requery.domain.model.Person;
 import org.springframework.data.requery.domain.model.Phone;
 import org.springframework.data.requery.domain.model.RandomData;
-import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import java.time.LocalDate;
@@ -61,6 +62,7 @@ import static org.assertj.core.api.Assertions.fail;
  * @author Diego on 2018. 6. 12..
  */
 @Slf4j
+@Transactional
 public class FunctionalTest extends AbstractDomainTest {
 
     private static final int COUNT = 30;
@@ -230,6 +232,8 @@ public class FunctionalTest extends AbstractDomainTest {
     }
 
     private class DerivedPhone extends Phone {
+        private static final long serialVersionUID = 471770387084994742L;
+
         @Nonnull
         @Override
         public String toString() {
@@ -274,13 +278,13 @@ public class FunctionalTest extends AbstractDomainTest {
     }
 
     @Test
+    @Transactional
     public void insert_into_select_query() {
         Group group = new Group();
         group.setName("Bob");
         group.setDescription("Bob's group");
 
         requeryOperations.insert(group);
-
 
         int count = dataStore.insert(Person.class, Person.NAME, Person.DESCRIPTION)
             .query(dataStore.select(Group.NAME, Group.DESCRIPTION))
@@ -308,6 +312,7 @@ public class FunctionalTest extends AbstractDomainTest {
         assertThat(result).isEqualTo("success");
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void find_by_composite_key() {
         Group group = new Group();
@@ -368,7 +373,7 @@ public class FunctionalTest extends AbstractDomainTest {
         assertThat(requeryOperations.count(Address.class).get().value()).isEqualTo(0);
     }
 
-    // @Ignore("Spring @Transactional과 requery 자체 transaction을 함께 쓰지 마세요")
+    @Ignore("Spring @Transactional과 requery 자체 transaction을 함께 쓰지 마세요")
     @Test
     public void rollback_transaction() {
         List<Long> ids = new ArrayList<>();
@@ -390,6 +395,7 @@ public class FunctionalTest extends AbstractDomainTest {
         } catch (Exception ignored) {
             log.info("Rollback executed.");
         }
+        log.debug("ids={}", ids);
         assertThat(requeryOperations.count(Person.class).get().value()).isEqualTo(0);
     }
 
@@ -670,7 +676,6 @@ public class FunctionalTest extends AbstractDomainTest {
     }
 
     @Test
-    @Rollback(false)
     public void delete_cascade_one_to_many() {
         Person person = RandomData.randomPerson();
         requeryOperations.insert(person);
@@ -686,7 +691,7 @@ public class FunctionalTest extends AbstractDomainTest {
         requeryOperations.delete(person);
 
         // getPhoneNumbers
-        assertThat(requeryOperations.findById(Phone.class, phoneId)).isNotNull();
+        assertThat(requeryOperations.findById(Phone.class, phoneId)).isNull();
     }
 
     @Test
@@ -801,7 +806,7 @@ public class FunctionalTest extends AbstractDomainTest {
 
         requeryOperations.insert(person);
 
-        Set<AbstractPhone> set = person.getPhoneNumberList().stream().collect(Collectors.toSet());
+        Set<AbstractPhone> set = new HashSet<>(person.getPhoneNumberList());
         assertThat(set).hasSize(2).containsOnly(phone1, phone2);
     }
 

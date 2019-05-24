@@ -37,6 +37,7 @@ import org.springframework.data.requery.domain.model.Group;
 import org.springframework.data.requery.domain.model.Person;
 import org.springframework.data.requery.domain.model.Phone;
 import org.springframework.data.requery.domain.model.RandomData;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -752,6 +753,7 @@ public class FunctionalQueryTest extends AbstractDomainTest {
     }
 
     @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void query_raw() {
         int count = 5;
 
@@ -762,11 +764,14 @@ public class FunctionalQueryTest extends AbstractDomainTest {
 
         List<Long> resultIds = new ArrayList<>();
 
-        List<Tuple> result = requeryOperations.raw("select * from Person").toList();
-        assertThat(result).hasSize(count);
+        // raw 실행 결과인 {@link Result#close}를 다른 query를 사용하기 전에 닫아줘야 합니다.
+        Result<Tuple> result = requeryOperations.raw("select * from Person");
+        List<Tuple> rows = result.toList();
+        result.close();
+        assertThat(rows).hasSize(count);
 
-        for (int index = 0; index < result.size(); index++) {
-            Tuple row = result.get(index);
+        for (int index = 0; index < rows.size(); index++) {
+            Tuple row = rows.get(index);
             String name = row.get("name");
             assertThat(name).isEqualTo(people.get(index).getName());
             Long id = row.<Long>get("personId");
@@ -775,22 +780,24 @@ public class FunctionalQueryTest extends AbstractDomainTest {
         }
         assertThat(resultIds).hasSize(count);
 
-        result = requeryOperations.raw("select * from Person WHERE personId in ?", resultIds).toList();
+        result = requeryOperations.raw("select * from Person WHERE personId in ?", resultIds);
         List<Long> ids = result.stream().map(it -> it.<Long>get("personId")).collect(Collectors.toList());
         log.debug("ids={}", ids);
         assertThat(ids).isEqualTo(resultIds);
 
-        result = requeryOperations.raw("select count(*) from Person").toList();
-        int number = result.get(0).<Number>get(0).intValue();
+        result = requeryOperations.raw("select count(*) from Person");
+        int number = result.first().<Number>get(0).intValue();
+        result.close();
         assertThat(number).isEqualTo(count);
 
-        result = requeryOperations.raw("select * from Person WHERE personId = ?", people.get(0)).toList();
+        result = requeryOperations.raw("select * from Person WHERE personId = ?", people.get(0));
         log.debug("load person...");
         log.debug("person={}", result);
-        assertThat(result.get(0).<Long>get("personId")).isEqualTo(people.get(0).getId());
+        assertThat(result.first().<Long>get("personId")).isEqualTo(people.get(0).getId());
     }
 
     @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void query_raw_entities() {
         int count = 5;
 
@@ -824,6 +831,7 @@ public class FunctionalQueryTest extends AbstractDomainTest {
     }
 
     @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void query_raw_paging() {
         int count = 5;
         for (int i = 0; i < count; i++) {

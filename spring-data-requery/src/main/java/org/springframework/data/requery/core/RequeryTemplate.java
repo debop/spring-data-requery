@@ -51,7 +51,6 @@ public class RequeryTemplate implements RequeryOperations {
         this.mappingContext = mappingContext;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <V> V runInTransaction(@Nonnull final Callable<V> callable,
                                   @Nullable final TransactionIsolation isolation) {
@@ -64,10 +63,11 @@ public class RequeryTemplate implements RequeryOperations {
             } catch (Exception e) {
                 throw new RequeryExecutionException("Fail to requery query.", e);
             }
+        } else {
+            return (isolation != null)
+                   ? dataStore.runInTransaction(callable, isolation)
+                   : dataStore.runInTransaction(callable, TransactionIsolation.READ_COMMITTED);
         }
-        return (isolation != null)
-               ? dataStore.runInTransaction(callable, isolation)
-               : dataStore.runInTransaction(callable, TransactionIsolation.READ_COMMITTED);
     }
 
     @Override
@@ -82,8 +82,8 @@ public class RequeryTemplate implements RequeryOperations {
             } catch (Exception e) {
                 throw new RequeryExecutionException("Fail to requery query.", e);
             }
+        } else {
+            return getDataStore().runInTransaction(() -> block.apply(dataStore), isolation);
         }
-
-        return getDataStore().runInTransaction(() -> block.apply(dataStore), isolation);
     }
 }

@@ -42,7 +42,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Slf4j
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { RequeryTestConfiguration.class })
-@Transactional
 public class DeclaredRequeryQueryTest {
 
     @Inject RequeryOperations operations;

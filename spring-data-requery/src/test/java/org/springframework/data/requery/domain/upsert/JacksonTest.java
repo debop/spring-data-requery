@@ -47,6 +47,7 @@ public class JacksonTest extends AbstractDomainTest {
         requeryOperations.deleteAll(UpsertLocation.class);
     }
 
+    // FIXME : Stackoverflow error가 발생한다. : Check out DtoConversionTest, AbstractVendorItem
     @Ignore("StackOverflowError")
     @Test
     public void one_to_many_jackson_serialize() throws Exception {

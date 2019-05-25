@@ -30,6 +30,8 @@ import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import org.springframework.data.requery.domain.AbstractDomainTest;
 import org.springframework.data.requery.domain.RandomData;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,9 +44,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.fail;
 
 /**
+ * NOTE: Reactive 는 Transaction 하에서는 작동하지 않으므로 {@link Propagation#NEVER} 로 지정해야 합니다.
+ *
  * @author Diego on 2018. 6. 12..
  */
 @Slf4j
+@Transactional(propagation = Propagation.NOT_SUPPORTED)
 public class ReactiveTest extends AbstractDomainTest {
 
     private ReactiveEntityStore<Object> reactiveStore;

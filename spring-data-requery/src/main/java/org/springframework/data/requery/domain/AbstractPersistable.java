@@ -18,9 +18,10 @@ package org.springframework.data.requery.domain;
 
 import io.requery.Persistable;
 import io.requery.Superclass;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.beans.Transient;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -36,6 +37,7 @@ public abstract class AbstractPersistable<ID> extends AbstractValueObject implem
     @Nullable
     public abstract ID getId();
 
+    @Transient
     @io.requery.Transient
     public boolean isNew() {
         return getId() == null;
@@ -62,9 +64,9 @@ public abstract class AbstractPersistable<ID> extends AbstractValueObject implem
         return (getId() != null) ? getId().hashCode() : System.identityHashCode(this);
     }
 
-    @NotNull
     @Override
     @io.requery.Transient
+    @Nonnull
     protected ToStringBuilder buildStringHelper() {
         return super.buildStringHelper()
             .add("id", getId());

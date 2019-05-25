@@ -16,23 +16,25 @@
 
 package org.springframework.data.requery.repository.custom;
 
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.requery.domain.basic.BasicUser;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Optional;
 
 public interface UserCustomExtendedRepository extends CustomGenericRepository<BasicUser, Long> {
 
-    @Transactional(readOnly = false, timeout = 100)
+    // NOTE: Not support timeout in requery transaction.
+    @Transactional(readOnly = true, timeout = 100)
     @Override
-    @NotNull
+    @Nonnull
     List<BasicUser> findAll();
 
-    @Transactional(readOnly = false, timeout = 10)
+    // NOTE: Not support timeout in requery transaction.
+    @Transactional(readOnly = true, timeout = 10)
     @Override
-    @NotNull
+    @Nonnull
     Optional<BasicUser> findById(Long id);
 
 }

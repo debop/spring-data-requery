@@ -1,5 +1,6 @@
 # spring-data-requery
-[![Build Status](https://travis-ci.org/coupang/spring-data-requery.svg?branch=2.x)](https://travis-ci.org/coupang/spring-data-requery)
+[![Build Status](https://travis-ci.org/coupang/spring-data-requery.svg?branch=2.0.x)](https://travis-ci.org/coupang/spring-data-requery)
+[![jcenter](https://api.bintray.com/packages/debop/maven/spring-data-requery/images/download.svg) ](https://bintray.com/coupang/coupang-oss-repository/spring-data-requery/_latestVersion)
 
 Spring Data for [requery](http://requery.io) 
 
@@ -7,6 +8,12 @@ Spring Data for [requery](http://requery.io)
 또한 Java, Kotlin, Android 등 JVM 환경과 Android 환경 모두를 지원하여, 가벼우면서, 성능 좋은 라이브러리입니다.
 
 참고: [Requery Overview](doc/Requery%20Overview.pdf)
+
+## Branch Information
+
+* 1.5.x   : Support Spring Boot 1.5.x (Not provided currently)
+* 2.x   : Support Spring Boot 2.0.x
+* 2.1.x : Support Spring Boot 2.1.x 
 
 ## Setup
 
@@ -27,7 +34,7 @@ Add dependency
 <dependency>
     <groupId>com.coupang</groupId>
     <artifactId>spring-data-requery</artifactId>
-    <version>2.0.1</version>
+    <version>2.0.5</version>
 </dependency>
 ```
 
@@ -41,13 +48,13 @@ repository {
 }
 dependencies {
     // for Java
-    compile "com.coupang:spring-data-requery:2.0.1"
+    compile "com.coupang:spring-data-requery:2.0.5"
     
     // for Kotlin
-    compile "com.coupang:spring-data-requery-kotlin:2.0.1"
+    compile "com.coupang:spring-data-requery-kotlin:2.0.5"
     
     // for Spring Boopt 2
-    compile "com.coupang:spring-boot-starter-data-requery:2.0.1"
+    compile "com.coupang:spring-boot-starter-data-requery:2.0.5"
 }
 ```
 
@@ -84,6 +91,7 @@ spring boot 환경설정에서 다음과 같이 설정하면 쉽게 사용 가�
 spring.data.requery.modelName = org.springframework.boot.autoconfigure.data.requery.domain.Models.DEFAULT
 spring.data.requery.batchUpdateSize = 50
 spring.data.requery.statementCacheSize = 512
+# if no need to create schema, make `tableCreationMode` to comments
 spring.data.requery.tableCreationMode = CREATE_NOT_EXISTS
 
 spring.datasource.hikari.driver-class-name = org.h2.Driver

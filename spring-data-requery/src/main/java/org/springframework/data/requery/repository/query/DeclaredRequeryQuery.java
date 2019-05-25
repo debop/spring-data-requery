@@ -21,8 +21,6 @@ import io.requery.query.Scalar;
 import io.requery.query.Tuple;
 import io.requery.query.element.QueryElement;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.RepositoryQuery;
@@ -30,13 +28,17 @@ import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.data.requery.annotation.Query;
 import org.springframework.data.requery.core.RequeryOperations;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
  * {@link Query} annotation이 정의된 메소드, interface default method, custom defined method를 실행하는 {@link RepositoryQuery}
- *
+ * <p>
  * FIXME: Declared Query를 실행할 때, Transaction 처리 시, connection이 닫혀버린다. 이를 유지 할 수 있는 기능을 넣어야 한다.
  *
  * @author debop
@@ -45,35 +47,34 @@ import java.util.List;
 @Slf4j
 public class DeclaredRequeryQuery extends AbstractRequeryQuery {
 
-    public DeclaredRequeryQuery(@NotNull RequeryQueryMethod method,
-                                @NotNull RequeryOperations operations) {
+    public DeclaredRequeryQuery(@Nonnull RequeryQueryMethod method,
+                                @Nonnull RequeryOperations operations) {
         super(method, operations);
     }
 
-    @NotNull
+    @Nonnull
     @Override
-    protected QueryElement<? extends Result<?>> doCreateQuery(@NotNull final Object[] values) {
+    protected QueryElement<? extends Result<?>> doCreateQuery(@Nonnull final Object[] values) {
         throw new UnsupportedOperationException("Unsupported operation in DeclaredRequeryQuery is defined");
     }
 
-    @NotNull
+    @Nonnull
     @Override
-    protected QueryElement<? extends Scalar<Integer>> doCreateCountQuery(@NotNull final Object[] values) {
+    protected QueryElement<? extends Scalar<Integer>> doCreateCountQuery(@Nonnull final Object[] values) {
         throw new UnsupportedOperationException("Unsupported operation in @Query is defined");
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Object execute(@NotNull final Object[] parameters) {
-        // return operations.runInTransaction(() -> executeInTransaction(parameters));
-        return executeInTransaction(parameters);
+    @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
+    public Object execute(@Nonnull final Object[] parameters) {
+        return executeOutTransaction(parameters);
     }
 
     @SuppressWarnings("unchecked")
-    private Object executeInTransaction(@NotNull final Object[] parameters) {
+    private Object executeOutTransaction(@Nonnull final Object[] parameters) {
 
         Object resultSet = null;
-
         String query = getRawQuery();
 
         log.debug("Execute queryMethod={}, return type={}, query={}", getQueryMethod().getName(), getQueryMethod().getReturnType(), query);
@@ -123,9 +124,8 @@ public class DeclaredRequeryQuery extends AbstractRequeryQuery {
         return resultSet;
     }
 
-    @NotNull
-    private Object[] extractValues(int pageableIndex, @NotNull final Object[] parameters) {
-
+    @Nonnull
+    private Object[] extractValues(int pageableIndex, @Nonnull final Object[] parameters) {
         Object[] values = (pageableIndex >= 0) ? new Object[parameters.length - 1] : parameters;
 
         int j = 0;
@@ -169,7 +169,9 @@ public class DeclaredRequeryQuery extends AbstractRequeryQuery {
         if (StringUtils.hasText(countQuery)) {
             try {
                 Result<Tuple> result = operations.raw(countQuery, values);
-                return result.first().get(0);
+                long count = result.first().get(0);
+                result.close();
+                return count;
             } catch (Exception e) {
                 log.error("Fail to retrieve count. query={}", query, e);
                 return 0L;
@@ -186,27 +188,30 @@ public class DeclaredRequeryQuery extends AbstractRequeryQuery {
 
     @SuppressWarnings("unchecked")
     @Nullable
-    private Object castResult(@NotNull final Result<?> result, @NotNull final Pageable pageable, final Long totals) {
+    private Object castResult(@Nonnull final Result<?> result, @Nonnull final Pageable pageable, final Long totals) {
         // TODO: List<Tuple> 인 경우 returned type 으로 변경해야 한다.
 
+        Object casted;
         if (getQueryMethod().isCollectionQuery()) {
-            return result.toList();
+            casted = result.toList();
         } else if (getQueryMethod().isStreamQuery()) {
-            return result.stream();
+            casted = result.stream();
         } else if (getQueryMethod().isPageQuery()) {
             List<?> contents = result.toList();
             if (pageable.isPaged()) {
                 log.trace("Cast result to Page. totals={}, contents={}, contents size={}", totals, contents, contents.size());
-                return new PageImpl<>(contents, pageable, totals);
+                casted = new PageImpl<>(contents, pageable, totals);
             } else {
-                return new PageImpl<>(result.toList());
+                casted = new PageImpl<>(result.toList());
             }
         } else {
-            return RequeryResultConverter.convertResult(result.firstOrNull());
+            casted = RequeryResultConverter.convertResult(result.firstOrNull());
         }
+        result.close();
+        return casted;
     }
 
-    @NotNull
+    @Nonnull
     private String getRawQuery() {
 
         String rawQuery = getQueryMethod().getAnnotatedQuery();
@@ -219,7 +224,7 @@ public class DeclaredRequeryQuery extends AbstractRequeryQuery {
         return rawQuery;
     }
 
-    @NotNull
+    @Nonnull
     private ReturnedType getReturnedType(Object[] parameters) {
         RequeryParametersParameterAccessor accessor = new RequeryParametersParameterAccessor(queryMethod, parameters);
         ResultProcessor processor = getQueryMethod().getResultProcessor();

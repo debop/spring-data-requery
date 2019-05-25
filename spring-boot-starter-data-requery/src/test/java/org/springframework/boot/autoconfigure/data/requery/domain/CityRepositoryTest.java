@@ -23,9 +23,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.data.requery.configs.TestRequeryConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.requery.repository.config.EnableRequeryRepositories;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Nonnull;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -44,6 +50,9 @@ public class CityRepositoryTest {
 
     @Autowired
     private CityRepository repository;
+
+    @Autowired
+    private PlatformTransactionManager transactionManager;
 
     @Test
     public void contextLoading() {
@@ -78,5 +87,46 @@ public class CityRepositoryTest {
         City seoul = repository.findFirstByName("Seoul");
         assertThat(seoul).isNotNull();
         assertThat(seoul.getCountry()).isEqualTo(city.getCountry());
+    }
+
+    @Test
+    @Transactional
+    public void testTransaction() throws Exception {
+        repository.deleteAll();
+
+        try {
+            CityService service = new CityService(repository);
+            service.saveCities(10);
+        } catch (Exception e) {
+            log.error("Fail to save cities", e);
+        }
+
+//        assertThat(repository.count()).isEqualTo(0);
+    }
+
+    static class CityService {
+
+        private final CityRepository repository;
+
+        public CityService(@Nonnull final CityRepository repository) {
+            this.repository = repository;
+        }
+
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
+        public void saveCities(int count) {
+            try {
+                for (int i = 0; i < count; i++) {
+                    City city = new City("Seoul " + i, "Korea " + i);
+
+                    repository.save(city);
+
+                    if (i == 5) {
+                        repository.save(new City(null, null));
+                    }
+                }
+            } catch(Exception e) {
+                log.error("Fail to save cities", e);
+            }
+        }
     }
 }

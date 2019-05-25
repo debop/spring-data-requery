@@ -20,8 +20,8 @@ import io.requery.PersistenceException
 import io.requery.query.Result
 import io.requery.query.element.QueryElement
 import io.requery.query.function.Count
-import kotlinx.coroutines.experimental.Dispatchers
-import kotlinx.coroutines.experimental.withContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import mu.KLogging
 import org.springframework.core.convert.ConversionService
 import org.springframework.core.convert.support.ConfigurableConversionService
@@ -183,7 +183,7 @@ internal class CoroutinePagedExecution(val parameters: RequeryParameters) : Abst
             queryElement = adjustPage(queryElement, query.domainClass, pageable)
             logger.trace { "offset=${queryElement.offset}, limit=${queryElement.limit}, pageable=$pageable" }
 
-            val result = withContext(Dispatchers.Unconfined) { queryElement.getAsResult().toList() }
+            val result = withContext(Dispatchers.Default) { queryElement.getAsResult().toList() }
             val totals = withContext(Dispatchers.Default) { doExecuteTotals(query, values) }
 
             PageImpl(result, pageable, totals)

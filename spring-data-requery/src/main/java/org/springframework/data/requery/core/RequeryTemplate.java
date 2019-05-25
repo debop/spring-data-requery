@@ -20,12 +20,12 @@ import io.requery.TransactionIsolation;
 import io.requery.sql.EntityDataStore;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.data.requery.RequeryExecutionException;
 import org.springframework.data.requery.mapping.RequeryMappingContext;
 import org.springframework.util.Assert;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 
@@ -42,8 +42,8 @@ public class RequeryTemplate implements RequeryOperations {
     private final EntityDataStore<Object> dataStore;
     private final RequeryMappingContext mappingContext;
 
-    public RequeryTemplate(@NotNull EntityDataStore<Object> dataStore,
-                           @NotNull RequeryMappingContext mappingContext) {
+    public RequeryTemplate(@Nonnull EntityDataStore<Object> dataStore,
+                           @Nonnull RequeryMappingContext mappingContext) {
         Assert.notNull(dataStore, "dataStore must not be null");
         Assert.notNull(mappingContext, "mappingContext must not be null");
 
@@ -51,9 +51,8 @@ public class RequeryTemplate implements RequeryOperations {
         this.mappingContext = mappingContext;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <V> V runInTransaction(@NotNull final Callable<V> callable,
+    public <V> V runInTransaction(@Nonnull final Callable<V> callable,
                                   @Nullable final TransactionIsolation isolation) {
         Assert.notNull(callable, "Callable must not be null.");
 
@@ -64,14 +63,15 @@ public class RequeryTemplate implements RequeryOperations {
             } catch (Exception e) {
                 throw new RequeryExecutionException("Fail to requery query.", e);
             }
+        } else {
+            return (isolation != null)
+                   ? dataStore.runInTransaction(callable, isolation)
+                   : dataStore.runInTransaction(callable, TransactionIsolation.READ_COMMITTED);
         }
-        return (isolation != null)
-               ? dataStore.runInTransaction(callable, isolation)
-               : dataStore.runInTransaction(callable, TransactionIsolation.READ_COMMITTED);
     }
 
     @Override
-    public <V> V withTransaction(@NotNull final Function<EntityDataStore<Object>, V> block,
+    public <V> V withTransaction(@Nonnull final Function<EntityDataStore<Object>, V> block,
                                  @Nullable final TransactionIsolation isolation) {
         Assert.notNull(block, "block must not be null.");
 
@@ -82,8 +82,8 @@ public class RequeryTemplate implements RequeryOperations {
             } catch (Exception e) {
                 throw new RequeryExecutionException("Fail to requery query.", e);
             }
+        } else {
+            return getDataStore().runInTransaction(() -> block.apply(dataStore), isolation);
         }
-
-        return getDataStore().runInTransaction(() -> block.apply(dataStore), isolation);
     }
 }

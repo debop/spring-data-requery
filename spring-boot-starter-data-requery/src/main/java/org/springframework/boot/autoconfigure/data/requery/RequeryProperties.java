@@ -44,11 +44,11 @@ public class RequeryProperties {
     /**
      * Statement cache size
      */
-    private Integer statementCacheSize = 1024;
+    private Integer statementCacheSize = 0;
 
     /**
      * Table creation mode
      */
-    private TableCreationMode tableCreationMode = TableCreationMode.CREATE_NOT_EXISTS;
+    private TableCreationMode tableCreationMode; // = TableCreationMode.CREATE_NOT_EXISTS;
 
 }

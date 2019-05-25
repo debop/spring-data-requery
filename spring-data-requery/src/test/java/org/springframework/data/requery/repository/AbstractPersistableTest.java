@@ -47,6 +47,9 @@ public class AbstractPersistableTest {
 
         CustomAbstractPersistable entity = new CustomAbstractPersistable();
         CustomAbstractPersistable saved = repository.save(entity);
+        assertThat(saved).isNotNull();
+        assertThat(saved.getId()).isNotNull();
+
         CustomAbstractPersistable found = repository.findById(saved.getId()).get();
 
         assertThat(found).isEqualTo(saved);
@@ -56,6 +59,8 @@ public class AbstractPersistableTest {
     public void equalsWorksForProxiedEntities() {
 
         CustomAbstractPersistable entity = repository.save(new CustomAbstractPersistable());
+        assertThat(entity).isNotNull();
+        assertThat(entity.getId()).isNotNull();
 
         CustomAbstractPersistable proxy = repository.getOne(entity.getId());
 

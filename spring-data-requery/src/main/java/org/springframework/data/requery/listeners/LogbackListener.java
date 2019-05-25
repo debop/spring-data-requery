@@ -20,8 +20,9 @@ import io.requery.sql.BoundParameters;
 import io.requery.sql.EntityStateListener;
 import io.requery.sql.StatementListener;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNullableByDefault;
 import java.sql.Statement;
 
 /**
@@ -30,6 +31,7 @@ import java.sql.Statement;
  * @author debop
  */
 @Slf4j
+@ParametersAreNullableByDefault
 public class LogbackListener<E> implements EntityStateListener<E>, StatementListener {
 
     private final boolean printStatement;
@@ -81,7 +83,11 @@ public class LogbackListener<E> implements EntityStateListener<E>, StatementList
     public void beforeExecuteUpdate(@Nullable final Statement statement,
                                     @Nullable final String sql,
                                     @Nullable final BoundParameters parameters) {
-        log.debug("beforeExecuteUpdate ... sql={}", sql);
+        if (parameters != null && !parameters.isEmpty()) {
+            log.debug("beforeExecuteUpdate SQL:\n{} ({})", sql, parameters);
+        } else {
+            log.debug("beforeExecuteUpdate SQL:\n{}", sql);
+        }
     }
 
     @Override
@@ -111,9 +117,9 @@ public class LogbackListener<E> implements EntityStateListener<E>, StatementList
                                    final BoundParameters parameters) {
         if (statement != null) {
             if (parameters != null && !parameters.isEmpty()) {
-                log.debug("beforeExecuteUpdate SQL:\n{} ({})", sql, parameters);
+                log.debug("beforeExecuteQuery SQL:\n{} ({})", sql, parameters);
             } else {
-                log.debug("beforeExecuteUpdate SQL:\n{}", sql);
+                log.debug("beforeExecuteQuery SQL:\n{}", sql);
             }
 
             if (printStatement) {

@@ -61,7 +61,6 @@ abstract class AbstractRequeryConfiguration {
     fun requeryConfiguration(dataSource: DataSource, entityModel: EntityModel): io.requery.sql.Configuration {
         return ConfigurationBuilder(dataSource, entityModel)
             .setEntityCache(EmptyEntityCache())
-            .setStatementCacheSize(1024)
             .setBatchUpdateSize(100)
             .addStatementListener(LogbackListener<Any>())
             .build()
@@ -113,7 +112,7 @@ abstract class AbstractRequeryConfiguration {
             log.debug { schema.createTablesString(getTableCreationMode()) }
             schema.createTables(getTableCreationMode())
             log.info { "Success to create database schema" }
-        } catch(ignored: Exception) {
+        } catch (ignored: Exception) {
             log.error(ignored) { "Fail to creation database schema." }
         }
     }

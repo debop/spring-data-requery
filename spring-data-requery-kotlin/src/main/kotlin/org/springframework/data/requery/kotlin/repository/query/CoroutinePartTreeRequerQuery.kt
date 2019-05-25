@@ -17,7 +17,7 @@
 package org.springframework.data.requery.kotlin.repository.query
 
 import io.requery.query.element.QueryElement
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.runBlocking
 import mu.KLogging
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.query.parser.PartTree
@@ -125,7 +125,7 @@ open class CoroutinePartTreeRequerQuery(queryMethod: RequeryQueryMethod,
             val creator = createCreator(accessor)
             check(creator != null) { "Creator must not be null." }
 
-            var query = creator!!.createQuery(getDynamicSort(values))
+            var query = creator.createQuery(getDynamicSort(values))
             if(queryMethod.isPageQuery) {
                 query = query.applyPageable(domainKlass, accessor.pageable)
             }

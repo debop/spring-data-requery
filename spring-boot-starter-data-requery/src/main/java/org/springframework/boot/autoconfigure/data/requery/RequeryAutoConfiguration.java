@@ -16,13 +16,13 @@
 
 package org.springframework.boot.autoconfigure.data.requery;
 
+import io.requery.TransactionIsolation;
 import io.requery.cache.WeakEntityCache;
 import io.requery.meta.EntityModel;
 import io.requery.sql.ConfigurationBuilder;
 import io.requery.sql.EntityDataStore;
 import io.requery.sql.SchemaModifier;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -31,12 +31,15 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.requery.core.RequeryTransactionManager;
 import org.springframework.data.requery.listeners.LogbackListener;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 import java.lang.reflect.Field;
@@ -48,15 +51,16 @@ import java.lang.reflect.Field;
  */
 @Slf4j
 @Configuration
+@EnableTransactionManagement
 @ConditionalOnBean({ DataSource.class })
 @EnableConfigurationProperties(RequeryProperties.class)
 @AutoConfigureAfter({ DataSourceAutoConfiguration.class })
 public class RequeryAutoConfiguration {
 
-    @NotNull
+    @Nonnull
     private final RequeryProperties properties;
 
-    public RequeryAutoConfiguration(@NotNull final RequeryProperties properties) {
+    public RequeryAutoConfiguration(@Nonnull final RequeryProperties properties) {
         this.properties = properties;
     }
 
@@ -71,6 +75,7 @@ public class RequeryAutoConfiguration {
             String className = StringUtils.stripFilenameExtension(modelFullName);
             String modelName = StringUtils.getFilenameExtension(modelFullName);
             log.debug("Entity model name={}", modelFullName);
+            Assert.state(!StringUtils.isEmpty(modelName), "modeulName should not be empty.");
 
             Class<?> clazz = ClassUtils.forName(className, Thread.currentThread().getContextClassLoader());
 
@@ -85,28 +90,29 @@ public class RequeryAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean({ DataSource.class, EntityModel.class })
-    public io.requery.sql.Configuration requeryConfiguration(@NotNull final DataSource dataSource,
-                                                             @NotNull final EntityModel entityModel) {
+    public io.requery.sql.Configuration requeryConfiguration(@Nonnull final DataSource dataSource,
+                                                             @Nonnull final EntityModel entityModel) {
         return new ConfigurationBuilder(dataSource, entityModel)
             .setStatementCacheSize(properties.getStatementCacheSize())
             .setBatchUpdateSize(properties.getBatchUpdateSize())
             .setEntityCache(new WeakEntityCache())
             .addStatementListener(new LogbackListener<>())
+            .setTransactionIsolation(TransactionIsolation.SERIALIZABLE)
             .build();
     }
 
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean({ io.requery.sql.Configuration.class })
-    public EntityDataStore<Object> entityDataStore(@NotNull final io.requery.sql.Configuration configuration) {
+    public EntityDataStore<Object> entityDataStore(@Nonnull final io.requery.sql.Configuration configuration) {
         return new EntityDataStore<>(configuration);
     }
 
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean({ DataSource.class })
-    public PlatformTransactionManager transactionManager(@NotNull final DataSource dataSource) {
-        return new DataSourceTransactionManager(dataSource);
+    public PlatformTransactionManager transactionManager(@Nonnull final EntityDataStore<Object> entityDataStore) {
+        return new RequeryTransactionManager(entityDataStore);
     }
 
     @Autowired io.requery.sql.Configuration configuration;
@@ -116,6 +122,10 @@ public class RequeryAutoConfiguration {
      */
     @PostConstruct
     protected void setupSchema() {
+        if (properties.getTableCreationMode() == null) {
+            log.info("No action to Database schema");
+            return;
+        }
         log.info("Setup Requery Database Schema... mode={}", properties.getTableCreationMode());
 
         try {

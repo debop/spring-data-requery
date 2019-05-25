@@ -30,10 +30,10 @@ import io.requery.Table;
 import io.requery.Transient;
 import lombok.Getter;
 import lombok.Setter;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.requery.domain.AbstractPersistable;
 import org.springframework.data.requery.domain.ToStringBuilder;
 
+import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.Set;
 
@@ -79,7 +79,8 @@ public class AbstractTreeNode extends AbstractPersistable<Long> {
 
     @Transient
     @Override
-    protected @NotNull ToStringBuilder buildStringHelper() {
+    @Nonnull
+    protected ToStringBuilder buildStringHelper() {
         return super.buildStringHelper()
             .add("name", name);
     }

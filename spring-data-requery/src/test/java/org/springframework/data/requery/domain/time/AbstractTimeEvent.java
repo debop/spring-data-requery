@@ -20,6 +20,7 @@ import io.requery.Column;
 import io.requery.Convert;
 import io.requery.Entity;
 import io.requery.Key;
+import io.requery.Nullable;
 import io.requery.PreInsert;
 import io.requery.PreUpdate;
 import io.requery.Transient;
@@ -29,10 +30,10 @@ import io.requery.converter.LocalTimeConverter;
 import io.requery.converter.OffsetDateTimeConverter;
 import io.requery.converter.ZonedDateTimeConverter;
 import lombok.Getter;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.requery.domain.AbstractPersistable;
 import org.springframework.data.requery.domain.ToStringBuilder;
 
+import javax.annotation.Nonnull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -52,7 +53,7 @@ public abstract class AbstractTimeEvent extends AbstractPersistable<UUID> {
 
     public AbstractTimeEvent() {}
 
-    public AbstractTimeEvent(@NotNull UUID id) {
+    public AbstractTimeEvent(@Nonnull UUID id) {
         this.id = id;
     }
 
@@ -71,9 +72,13 @@ public abstract class AbstractTimeEvent extends AbstractPersistable<UUID> {
     @Convert(LocalTimeConverter.class)
     protected LocalTime localTime;
 
+    @Nullable
+    @Column(definition = "timestamp NULL DEFAULT NULL")
     @Convert(OffsetDateTimeConverter.class)
     protected OffsetDateTime offsetDateTime;
 
+    @Nullable
+    @Column(definition = "timestamp NULL DEFAULT NULL")
     @Convert(ZonedDateTimeConverter.class)
     protected ZonedDateTime zonedDateTime;
 
@@ -95,7 +100,7 @@ public abstract class AbstractTimeEvent extends AbstractPersistable<UUID> {
 
     @Transient
     @Override
-    protected @NotNull ToStringBuilder buildStringHelper() {
+    protected ToStringBuilder buildStringHelper() {
         return super.buildStringHelper()
             .add("name", name)
             .add("localDate", localDate)

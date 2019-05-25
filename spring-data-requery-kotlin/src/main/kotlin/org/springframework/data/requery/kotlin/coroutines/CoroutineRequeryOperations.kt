@@ -32,6 +32,7 @@ import io.requery.query.element.QueryElement
 import io.requery.query.function.Count
 import io.requery.sql.EntityContext
 import io.requery.sql.KotlinEntityDataStore
+import kotlinx.coroutines.CoroutineScope
 import org.springframework.data.requery.kotlin.applyWhereConditions
 import org.springframework.data.requery.kotlin.getEntityContext
 import org.springframework.data.requery.kotlin.getEntityModel
@@ -42,17 +43,17 @@ import kotlin.reflect.KClass
 
  * @author debop
  */
-interface CoroutineRequeryOperations {
+interface CoroutineRequeryOperations : CoroutineScope {
 
     val entityStore: CoroutineEntityStore<Any>
 
     @JvmDefault
     val entityModel: EntityModel
-        get() = entityStore.dataStore.getEntityModel()
+        get() = entityStore.delegate.getEntityModel()
 
     @JvmDefault
     val entityContext: EntityContext<out Any>
-        get() = entityStore.dataStore.getEntityContext()
+        get() = entityStore.delegate.getEntityContext()
 
     @JvmDefault
     suspend infix fun <T : Any> select(entityType: KClass<T>): Selection<out DeferredResult<T>> =
@@ -218,7 +219,7 @@ interface CoroutineRequeryOperations {
 
     @JvmDefault
     suspend fun <T : Any> withDataStore(block: KotlinEntityDataStore<Any>.() -> T): T {
-        return block.invoke(entityStore.dataStore)
+        return block.invoke(entityStore.delegate)
     }
 
 }

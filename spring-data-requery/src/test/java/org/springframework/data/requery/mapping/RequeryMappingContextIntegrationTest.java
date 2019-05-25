@@ -65,7 +65,6 @@ public class RequeryMappingContextIntegrationTest {
 
     @Test
     public void setupMappingContextCorrectly() {
-
         RequeryPersistentEntity<?> entity = context.getRequiredPersistentEntity(AbstractBasicUser.class);
         assertThat(entity).isNotNull();
     }

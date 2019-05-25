@@ -83,7 +83,11 @@ public class LogbackListener<E> implements EntityStateListener<E>, StatementList
     public void beforeExecuteUpdate(@Nullable final Statement statement,
                                     @Nullable final String sql,
                                     @Nullable final BoundParameters parameters) {
-        log.debug("beforeExecuteUpdate ... sql={}", sql);
+        if (parameters != null && !parameters.isEmpty()) {
+            log.debug("beforeExecuteUpdate SQL:\n{} ({})", sql, parameters);
+        } else {
+            log.debug("beforeExecuteUpdate SQL:\n{}", sql);
+        }
     }
 
     @Override
@@ -113,9 +117,9 @@ public class LogbackListener<E> implements EntityStateListener<E>, StatementList
                                    final BoundParameters parameters) {
         if (statement != null) {
             if (parameters != null && !parameters.isEmpty()) {
-                log.debug("beforeExecuteUpdate SQL:\n{} ({})", sql, parameters);
+                log.debug("beforeExecuteQuery SQL:\n{} ({})", sql, parameters);
             } else {
-                log.debug("beforeExecuteUpdate SQL:\n{}", sql);
+                log.debug("beforeExecuteQuery SQL:\n{}", sql);
             }
 
             if (printStatement) {

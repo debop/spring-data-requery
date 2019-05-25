@@ -15,7 +15,6 @@ Spring Data for [requery](http://requery.io)
 * 2.x   : Support Spring Boot 2.0.x
 * 2.1.x : Support Spring Boot 2.1.x 
 
-
 ## Setup
 
 #### Maven

@@ -55,6 +55,7 @@ import org.springframework.data.requery.repository.support.SimpleRequeryReposito
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
@@ -849,6 +850,7 @@ public class UserRepositoryTest {
     }
 
     @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void bindsSortingToOuterJoinCorrectly() {
 
         flushTestUsers();
@@ -942,8 +944,9 @@ public class UserRepositoryTest {
 
     @Test
     public void findAllReturnsEmptyIterableIfNoIdsGiven() {
+        flushTestUsers();
 
-        assertThat(repository.findAllById(Collections.emptySet())).isEmpty();
+        assertThat(repository.findAllById(Collections.emptyList())).isEmpty();
     }
 
     @Ignore("결과가 Tuple 인 경우 ReturnedType 으로 변환하는 기능이 필요하다")

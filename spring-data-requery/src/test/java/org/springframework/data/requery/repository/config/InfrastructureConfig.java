@@ -16,14 +16,15 @@
 
 package org.springframework.data.requery.repository.config;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import io.requery.meta.EntityModel;
 import io.requery.sql.TableCreationMode;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.requery.configs.AbstractRequeryConfiguration;
 import org.springframework.data.requery.domain.Models;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
@@ -34,8 +35,9 @@ import javax.sql.DataSource;
  * @author debop
  * @since 18. 6. 12
  */
+@Slf4j
 @Configuration
-@EnableTransactionManagement
+@EnableTransactionManagement(proxyTargetClass = true)
 public class InfrastructureConfig extends AbstractRequeryConfiguration {
 
     @Override
@@ -50,12 +52,24 @@ public class InfrastructureConfig extends AbstractRequeryConfiguration {
 
     @Bean
     public DataSource dataSource() {
-        return new EmbeddedDatabaseBuilder()
-            .setName("data")
-            .setType(EmbeddedDatabaseType.H2)
-            .setScriptEncoding("UTF-8")
-            .ignoreFailedDrops(true)
-            .generateUniqueName(true)
-            .build();
+
+        HikariConfig config = new HikariConfig();
+        config.setDriverClassName("org.h2.Driver");
+        config.setJdbcUrl("jdbc:h2:mem:requery;DB_CLOSE_DELAY=-1;MODE=MySQL;");
+        config.setAutoCommit(false);
+        config.setUsername("sa");
+
+        DataSource dataSource = new HikariDataSource(config);
+        log.trace("DataSource={}", dataSource);
+        return dataSource;
+
+//        return new EmbeddedDatabaseBuilder()
+//            .setName("data")
+//            .setType(EmbeddedDatabaseType.H2)
+//            .setScriptEncoding("UTF-8")
+//            .ignoreFailedDrops(true)
+//            .generateUniqueName(true)
+//            .continueOnError(true)
+//            .build();
     }
 }

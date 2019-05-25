@@ -45,11 +45,22 @@ public class RequeryTestConfiguration extends AbstractRequeryConfiguration {
 
         HikariConfig config = new HikariConfig();
         config.setDriverClassName("org.h2.Driver");
-        config.setJdbcUrl("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false");
+        config.setJdbcUrl("jdbc:h2:mem:requery;DB_CLOSE_DELAY=-1;MODE=MySQL;");
+        config.setAutoCommit(false);
         config.setUsername("sa");
 
         DataSource dataSource = new HikariDataSource(config);
         log.trace("DataSource={}", dataSource);
         return dataSource;
+
+//        return new EmbeddedDatabaseBuilder()
+//            .setName("data")
+//            .setType(EmbeddedDatabaseType.H2)
+//            .setScriptEncoding("UTF-8")
+//            .ignoreFailedDrops(true)
+//            .generateUniqueName(true)
+//            .continueOnError(true)
+//            .build();
+
     }
 }

@@ -48,8 +48,9 @@ public class JavaTimeConverterTest extends AbstractDomainTest {
         assertThat(loaded.getLocalDate()).isEqualTo(event.getLocalDate());
         assertThat(loaded.getLocalDateTime()).isEqualTo(event.getLocalDateTime());
 
-        // BUG: LocalTime 은 milliseconds 값을 가지는데, java.sql.Time 은 seconds 까지 밖에 표현하지 못한다 (DB마다 다르다)
-        assertThat(loaded.getLocalTime()).isEqualTo(event.getLocalTime().truncatedTo(ChronoUnit.SECONDS));
+        // NOTE: LocalTime 은 milliseconds 값을 가지는데, java.sql.Time 은 seconds 까지 밖에 표현하지 못한다 (DB마다 다르다)
+        assertThat(loaded.getLocalTime().truncatedTo(ChronoUnit.SECONDS))
+            .isEqualTo(event.getLocalTime().truncatedTo(ChronoUnit.SECONDS));
 
 //        assertThat(loaded.getOffsetDateTime()).isEqualTo(event.getOffsetDateTime());
 //        assertThat(loaded.getZonedDateTime()).isEqualTo(event.getZonedDateTime());

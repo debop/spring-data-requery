@@ -16,6 +16,7 @@
 
 package org.springframework.data.requery.core;
 
+import io.requery.Transaction;
 import io.requery.TransactionIsolation;
 import io.requery.meta.Attribute;
 import io.requery.meta.EntityModel;
@@ -37,6 +38,8 @@ import io.requery.sql.EntityDataStore;
 import org.springframework.data.requery.mapping.RequeryMappingContext;
 import org.springframework.data.requery.utils.Iterables;
 import org.springframework.data.requery.utils.RequeryUtils;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -64,6 +67,10 @@ public interface RequeryOperations {
 
     default EntityModel getEntityModel() {
         return RequeryUtils.getEntityModel(getDataStore());
+    }
+
+    default Transaction transaction() {
+        return getDataStore().transaction();
     }
 
     @SuppressWarnings("unchecked")
@@ -105,39 +112,54 @@ public interface RequeryOperations {
         return Iterables.toList(getDataStore().refresh(entities, attributes));
     }
 
+    /**
+     * Refresh Lazy initialized properties and associations
+     *
+     * @param entity
+     * @param <E>
+     * @return
+     */
     default <E> E refreshAllProperties(@Nonnull final E entity) {
         return getDataStore().refreshAll(entity);
     }
 
+    @Transactional
     default <E> E upsert(@Nonnull final E entity) {
         return getDataStore().upsert(entity);
     }
 
+    @Transactional
     default <E> List<E> upsertAll(@Nonnull final Iterable<E> entities) {
         return Iterables.toList(getDataStore().upsert(entities));
     }
 
+    @Transactional
     default <E> E insert(@Nonnull final E entity) {
         return getDataStore().insert(entity);
     }
 
+    @Transactional
     default <E, K> K insert(@Nonnull final E entity, @Nonnull final Class<K> keyClass) {
         return getDataStore().insert(entity, keyClass);
     }
 
+    @Transactional
     default <E> Insertion<? extends Result<Tuple>> insert(@Nonnull final Class<E> entityType) {
         return getDataStore().insert(entityType);
     }
 
     @SuppressWarnings("unchecked")
+    @Transactional
     default <E> InsertInto<? extends Result<Tuple>> insert(@Nonnull final Class<E> entityType, QueryAttribute<E, ?>... attributes) {
         return getDataStore().insert(entityType, attributes);
     }
 
+    @Transactional
     default <E> List<E> insertAll(@Nonnull final Iterable<E> entities) {
         return Iterables.toList(getDataStore().insert(entities));
     }
 
+    @Transactional
     default <E, K> List<K> insertAll(@Nonnull final Iterable<E> entities, @Nonnull final Class<K> keyClass) {
         return Iterables.toList(getDataStore().insert(entities, keyClass));
     }
@@ -147,10 +169,12 @@ public interface RequeryOperations {
         return getDataStore().update();
     }
 
+    @Transactional
     default <E> E update(@Nonnull final E entity) {
         return getDataStore().update(entity);
     }
 
+    @Transactional
     default <E> E update(@Nonnull final E entity, final Attribute<?, ?>... attributes) {
         return getDataStore().update(entity, attributes);
     }
@@ -159,9 +183,11 @@ public interface RequeryOperations {
         return getDataStore().update(entityType);
     }
 
+    @Transactional
     default <E> List<E> updateAll(@Nonnull final Iterable<E> entities) {
         return Iterables.toList(getDataStore().update(entities));
     }
+
 
     default Deletion<? extends Scalar<Integer>> delete() {
         return getDataStore().delete();
@@ -175,10 +201,12 @@ public interface RequeryOperations {
         getDataStore().delete(entity);
     }
 
+    @Transactional
     default <E> void deleteAll(@Nonnull final Iterable<E> entities) {
         getDataStore().delete(entities);
     }
 
+    @Transactional
     default <E> Integer deleteAll(@Nonnull final Class<E> entityType) {
         return getDataStore().delete(entityType).get().value();
     }
@@ -209,10 +237,29 @@ public interface RequeryOperations {
         return getDataStore().count(entityType).from(entityType).where(condition).get().value() > 0;
     }
 
+    /**
+     * NOTE: raw 메소드는 자신만의 Connection을 가지므로, Transaction에 참여할 수 없습니다.
+     * 꼭 Transactional annotation에 propagation = Propagation.NOT_SUPPORTED 을 지정해주셔야 합니다.
+     *
+     * @param query      sql 구문
+     * @param parameters parameters
+     * @return 실행 결과. 다른 raw 를 사용학기 전에 꼭 {@link Result#close} 를 호출해야 합니다.
+     */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     default Result<Tuple> raw(@Nonnull final String query, final Object... parameters) {
         return getDataStore().raw(query, parameters);
     }
 
+    /**
+     * NOTE: raw 메소드는 자신만의 Connection을 가지므로, Transaction에 참여할 수 없습니다.
+     * 꼭 Transactional annotation에 propagation = Propagation.NOT_SUPPORTED 을 지정해주셔야 합니다.
+     *
+     * @param entityType 결과 entity type
+     * @param query      sql 구문
+     * @param parameters parameters
+     * @return 실행 결과. 다른 raw 를 사용학기 전에 꼭 {@link Result#close} 를 호출해야 합니다.
+     */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     default <E> Result<E> raw(@Nonnull final Class<E> entityType,
                               @Nonnull final String query,
                               final Object... parameters) {

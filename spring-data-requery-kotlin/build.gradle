@@ -64,7 +64,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-reflect"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core"
     testImplementation "org.jetbrains.kotlin:kotlin-test"
-    
+
     implementation "io.requery:requery"
     implementation "io.requery:requery-kotlin"
     implementation "io.requery:requery-jackson"

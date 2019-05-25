@@ -30,14 +30,12 @@ import java.util.Optional;
  * @author debop
  * @since 18. 6. 9
  */
+@Transactional(readOnly = true)
 public interface BasicUserRepository extends RequeryRepository<BasicUser, Long> {
 
-    @Transactional(readOnly = true)
     @Override
     Optional<BasicUser> findById(Long primaryKey);
 
-
-    @Transactional(readOnly = true)
     default List<BasicUser> findAllByName(String name) {
         return getOperations()
             .select(BasicUser.class)
@@ -46,7 +44,6 @@ public interface BasicUserRepository extends RequeryRepository<BasicUser, Long> 
             .toList();
     }
 
-    @Transactional(readOnly = true)
     default BasicUser findByEmail(String email) {
         return getOperations()
             .select(BasicUser.class)
@@ -55,7 +52,6 @@ public interface BasicUserRepository extends RequeryRepository<BasicUser, Long> 
             .firstOrNull();
     }
 
-    @Transactional(readOnly = true)
     @Query("select * from basic_user u where u.email = ?")
     BasicUser findByAnnotatedQuery(String email);
 }

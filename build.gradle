@@ -119,10 +119,11 @@ subprojects {
 
             dependency "org.javassist:javassist:3.22.0-GA"
 
-            // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
             dependency "org.apache.commons:commons-lang3:3.7"
             dependency "org.apache.commons:commons-collections4:4.1"
 
+
+            // Cache
             dependency "org.cache2k:cache2k-core:1.2.1.Final"
             dependency "org.cache2k:cache2k-jcache:1.2.1.Final"
 
@@ -203,7 +204,7 @@ subprojects {
 
     test {
         useJUnitPlatform()
-        // systemProperty 'java.util.logging.manager', 'ch.qos.logback.classic.Logger'
+        // systemProperty 'java.util.logging.manager', 'ch.qos.alllogback.classic.Logger'
 
         ignoreFailures true
         // maxParallelForks 4

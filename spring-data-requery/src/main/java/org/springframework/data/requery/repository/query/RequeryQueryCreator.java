@@ -94,7 +94,6 @@ public class RequeryQueryCreator extends AbstractQueryCreator<QueryElement<?>, L
         log.debug("Create RequeryQueryCreator for [{}]", domainClassName);
     }
 
-    @SuppressWarnings("unchecked")
     @Nonnull
     protected QueryElement<?> createQueryElement(@Nonnull final ReturnedType type) {
 
@@ -122,16 +121,14 @@ public class RequeryQueryCreator extends AbstractQueryCreator<QueryElement<?>, L
         return provider.getExpressions();
     }
 
-    @SuppressWarnings("unchecked")
-    @Nonnull
     @Override
     protected LogicalCondition<?, ?> create(@Nonnull final Part part,
                                             @Nullable final Iterator<Object> iterator) {
         log.trace("Build new condition...");
-        return buildWhereCondition(part);
+        LogicalCondition<?, ?> condition = buildWhereCondition(part);
+        return condition;
     }
 
-    @SuppressWarnings("unchecked")
     @Nonnull
     @Override
     protected LogicalCondition<?, ?> and(@Nonnull final Part part,
@@ -145,7 +142,6 @@ public class RequeryQueryCreator extends AbstractQueryCreator<QueryElement<?>, L
         return base.and(condition);
     }
 
-    @SuppressWarnings("unchecked")
     @Nonnull
     @Override
     protected LogicalCondition<?, ?> or(@Nonnull final LogicalCondition<?, ?> base,
@@ -160,7 +156,6 @@ public class RequeryQueryCreator extends AbstractQueryCreator<QueryElement<?>, L
         return complete(criteria, sort, root);
     }
 
-    @SuppressWarnings("unchecked")
     protected QueryElement<?> complete(@Nullable final LogicalCondition<?, ?> criteria,
                                        @Nonnull final Sort sort,
                                        @Nonnull QueryElement<?> root) {
@@ -183,7 +178,7 @@ public class RequeryQueryCreator extends AbstractQueryCreator<QueryElement<?>, L
 
         public QueryElementBuilder(@Nonnull final Part part) {
             Assert.notNull(part, "Part must not be null!");
-            log.debug("Create QueryElementBuilder. part={}l", part);
+            log.debug("Create QueryElementBuilder. part={}", part);
             this.part = part;
         }
 
@@ -191,7 +186,7 @@ public class RequeryQueryCreator extends AbstractQueryCreator<QueryElement<?>, L
          * Build Requery {@link QueryElement} from the underlying {@link Part}
          */
         @SuppressWarnings("unchecked")
-        @Nonnull
+        @Nullable
         public LogicalCondition<?, ?> build() {
 
             PropertyPath property = part.getProperty();
@@ -239,16 +234,25 @@ public class RequeryQueryCreator extends AbstractQueryCreator<QueryElement<?>, L
                 case NOT_IN:
                 case IN:
                     Object values = provider.next(part, Collection.class).getValue();
-                    // log.trace("in ({}), class={}", values, values.getClass());
+                    log.trace("Build where IN clause ... in ({}), class={}", values, values.getClass());
 
-                    if (values instanceof Iterable) {
+                    if (values instanceof Iterable<?>) {
                         Collection cols = Iterables.toList((Iterable) values);
-                        condition = (type == IN) ? expr.in(cols) : expr.notIn(cols);
+                        if (cols.isEmpty()) {
+                            condition = (type == IN) ? expr.eq(false) : expr.eq(true);
+                        } else {
+                            condition = (type == IN) ? expr.in(cols) : expr.notIn(cols);
+                        }
                     } else if (values instanceof Object[]) {
                         List list = Arrays.asList((Object[]) values);
-                        condition = (type == IN) ? expr.in(list) : expr.notIn(list);
+                        if (list.isEmpty()) {
+                            condition = (type == IN) ? expr.eq(false) : expr.eq(true);
+                        } else {
+                            condition = (type == IN) ? expr.in(list) : expr.notIn(list);
+                        }
                     } else {
-                        condition = (type == IN) ? expr.in(values) : expr.notIn(values);
+                        condition = (type == IN) ? expr.eq(false) : expr.eq(true);
+                        // condition = (type == IN) ? expr.in(values) : expr.notIn(values);
                     }
                     break;
 

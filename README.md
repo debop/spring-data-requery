@@ -1,6 +1,6 @@
 # spring-data-requery
-[![Build Status](https://travis-ci.org/coupang/spring-data-requery.svg?branch=2.x)](https://travis-ci.org/coupang/spring-data-requery)
-[![jcenter](https://api.bintray.com/packages/coupang/coupang-oss-repository/spring-data-requery/images/download.svg) ](https://bintray.com/coupang/coupang-oss-repository/spring-data-requery/_latestVersion)
+[![Build Status](https://travis-ci.org/debop/spring-data-requery.svg?branch=2.1.x)](https://travis-ci.org/debop/spring-data-requery)
+[![jcenter](https://api.bintray.com/packages/debop/maven/spring-data-requery/images/download.svg) ](https://bintray.com/coupang/coupang-oss-repository/spring-data-requery/_latestVersion)
 
 Spring Data for [requery](http://requery.io) 
 

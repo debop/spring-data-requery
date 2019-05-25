@@ -1,6 +1,6 @@
 # spring-data-requery
-[![Build Status](https://travis-ci.org/coupang/spring-data-requery.svg?branch=2.x)](https://travis-ci.org/coupang/spring-data-requery)
-[![jcenter](https://api.bintray.com/packages/coupang/coupang-oss-repository/spring-data-requery/images/download.svg) ](https://bintray.com/coupang/coupang-oss-repository/spring-data-requery/_latestVersion)
+[![Build Status](https://travis-ci.org/coupang/spring-data-requery.svg?branch=2.0.x)](https://travis-ci.org/coupang/spring-data-requery)
+[![jcenter](https://api.bintray.com/packages/debop/maven/spring-data-requery/images/download.svg) ](https://bintray.com/coupang/coupang-oss-repository/spring-data-requery/_latestVersion)
 
 Spring Data for [requery](http://requery.io) 
 
@@ -34,7 +34,7 @@ Add dependency
 <dependency>
     <groupId>com.coupang</groupId>
     <artifactId>spring-data-requery</artifactId>
-    <version>2.0.3</version>
+    <version>2.0.5</version>
 </dependency>
 ```
 
@@ -48,13 +48,13 @@ repository {
 }
 dependencies {
     // for Java
-    compile "com.coupang:spring-data-requery:2.0.3"
+    compile "com.coupang:spring-data-requery:2.0.5"
     
     // for Kotlin
-    compile "com.coupang:spring-data-requery-kotlin:2.0.3"
+    compile "com.coupang:spring-data-requery-kotlin:2.0.5"
     
     // for Spring Boopt 2
-    compile "com.coupang:spring-boot-starter-data-requery:2.0.3"
+    compile "com.coupang:spring-boot-starter-data-requery:2.0.5"
 }
 ```
 

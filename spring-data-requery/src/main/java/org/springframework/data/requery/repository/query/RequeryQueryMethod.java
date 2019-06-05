@@ -94,7 +94,6 @@ public class RequeryQueryMethod extends QueryMethod {
     /**
      * Check for named paraemter in AnnotatedQuery
      */
-    // FIXME: AnnotatedQuery 가 없는 경우에도 Named Parameter 때문에 문제가 된다고 예외를 일으킨다. 이 것을 수정해야 한다.
     private void assertParamterNamesInAnnotatedQuery() {
 
         String annotatedQuery = getAnnotatedQuery();
@@ -107,6 +106,7 @@ public class RequeryQueryMethod extends QueryMethod {
 
             String paramName = parameter.getName().orElse("");
 
+            // 현재 requery 1.6.0 에서는 Named parameter를 지원하지 않으므로 Named parameter가 있는 경우에 예외를 발생시킨다.
             if (StringUtils.hasText(annotatedQuery) &&
                 StringUtils.hasText(paramName) &&
                 (annotatedQuery.contains(":" + paramName) || annotatedQuery.contains("#" + paramName))) {

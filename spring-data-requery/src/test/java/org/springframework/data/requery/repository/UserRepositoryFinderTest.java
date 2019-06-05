@@ -89,6 +89,8 @@ public class UserRepositoryFinderTest {
 
     @Before
     public void setup() {
+        roleRepository.deleteAll();
+        userRepository.deleteAll();
 
         drummer = roleRepository.save(new Role("DRUMMER"));
         guitarist = roleRepository.save(new Role("GUITARIST"));

@@ -71,6 +71,7 @@ public interface UserRepository extends RequeryRepository<User, Integer>, UserRe
 
     List<User> findByEmailAddressAndLastnameOrFirstname(String emailAddress, String lastname, String firstname);
 
+    @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
     @Query("select * from SD_User u where u.emailAddress = ?")
     User findByAnnotatedQuery(String emailAddress);
 
@@ -103,17 +104,19 @@ public interface UserRepository extends RequeryRepository<User, Integer>, UserRe
     @Query("update SD_User u set u.lastname = ?")
     void renameAllUsersTo(String lastname);
 
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Query("select count(*) from SD_User u where u.firstname = ?")
     Long countWithFirstname(String firstname);
 
-    @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Query("select * from SD_User u where u.lastname = ? or u.firstname = ?")
     List<User> findByLastnameOrFirstname(/*@Param("lastname") */String lastname, /*@Param("firstname") */String firstname);
 
-    @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Query("select * from SD_User u where u.lastname = ? or u.age = ?")
     List<User> findByLastnameOrAge(String lastname, int age);
 
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Query("select * from SD_User u where u.firstname = ? or u.lastname = ?")
     List<User> findByLastnameOrFirstnameUnannotated(String firstname, String lastname);
 
@@ -369,11 +372,13 @@ public interface UserRepository extends RequeryRepository<User, Integer>, UserRe
 
     List<User> queryByAgeInOrFirstname(Integer[] ages, String firstname);
 
+    @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
     @Query("select * from SD_User")
     Stream<User> findAllByCustomQueryAndStream();
 
     Stream<User> readAllByFirstnameNotNull();
 
+    @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
     @Query("select * from SD_User")
     Stream<User> streamAllPaged(Pageable pageable);
 

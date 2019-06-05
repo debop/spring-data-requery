@@ -109,8 +109,10 @@ public abstract class AbstractRequeryConfiguration {
         return context;
     }
 
+    //    @Autowired private DataSource dataSource;
     @Bean
     public PlatformTransactionManager transactionManager(@Nonnull final EntityDataStore<Object> entityDataStore) {
+//        return new DataSourceTransactionManager(dataSource);
         return new RequeryTransactionManager(entityDataStore);
     }
 

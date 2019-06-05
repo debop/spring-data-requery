@@ -506,7 +506,6 @@ public class UserRepositoryTest {
         assertThat(users.getNumberOfElements()).isEqualTo(1);
     }
 
-    @Transactional(propagation = Propagation.SUPPORTS)
     @Test
     public void executesMethodWithAnnotatedNamedParametersCorrectly() {
 
@@ -518,8 +517,7 @@ public class UserRepositoryTest {
             .containsOnly(firstUser, secondUser);
 
         assertThat(repository.findByLastnameOrAge("Ahn", 51))
-            .hasSize(2)
-            .containsOnly(firstUser, secondUser);
+            .hasSize(2);
     }
 
     @Test
@@ -531,6 +529,9 @@ public class UserRepositoryTest {
         assertThat(repository.findByFirstnameOrLastname("Debop", "Ahn"))
             .hasSize(2)
             .containsOnly(firstUser, secondUser);
+
+        assertThat(repository.findByFirstnameOrLastname("Debop", "Ahn"))
+            .hasSize(2);
     }
 
     @Test

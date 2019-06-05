@@ -16,10 +16,19 @@
 
 package org.springframework.boot.autoconfigure.data.requery;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.requery.domain.City;
 import org.springframework.boot.autoconfigure.data.requery.domain.CityRepository;
 import org.springframework.data.requery.repository.config.EnableRequeryRepositories;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Nonnull;
+import javax.annotation.PostConstruct;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * RequeryApplication
@@ -27,9 +36,52 @@ import org.springframework.data.requery.repository.config.EnableRequeryRepositor
  * @author debop
  * @since 18. 11. 1
  */
+@Slf4j
 @SpringBootApplication
 @EnableRequeryRepositories(basePackageClasses = { CityRepository.class })
 public class RequeryApplication {
+
+    @Autowired
+    CityRepository repository;
+
+    @PostConstruct
+    @Transactional
+    public void transactionTest() {
+
+        try {
+            CityService service = new CityService(repository);
+            service.saveCities(10);
+        } catch (Exception e) {
+            log.error("Fail to save cities");
+        }
+
+        assertThat(repository.count()).isEqualTo(0);
+    }
+
+    static class CityService {
+
+        private final CityRepository repository;
+
+        public CityService(@Nonnull final CityRepository repository) {
+            this.repository = repository;
+        }
+
+        @Transactional
+        public void saveCities(int count) {
+            for (int i = 0; i < count; i++) {
+                City city = new City();
+                city.setName("Seoul" + i);
+                city.setCountry("Korea" + i);
+
+                repository.save(city);
+
+                if (i == 5) {
+                    repository.save(new City());
+                }
+            }
+        }
+    }
+
 
     public static void main(String[] args) {
         SpringApplication.run(RequeryApplication.class, args);

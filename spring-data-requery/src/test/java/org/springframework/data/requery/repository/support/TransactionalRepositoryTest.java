@@ -28,6 +28,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.requery.configs.RequeryTestConfiguration;
 import org.springframework.data.requery.core.RequeryOperations;
 import org.springframework.data.requery.domain.RandomData;
+import org.springframework.data.requery.domain.basic.BasicUser;
 import org.springframework.data.requery.repository.config.EnableRequeryRepositories;
 import org.springframework.data.requery.repository.sample.basic.BasicUserRepository;
 import org.springframework.test.context.ContextConfiguration;
@@ -39,6 +40,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionStatus;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -53,7 +55,7 @@ public class TransactionalRepositoryTest {
 
     @Configuration
     @EnableRequeryRepositories(basePackageClasses = { BasicUserRepository.class })
-    @EnableTransactionManagement(proxyTargetClass = true)
+    @EnableTransactionManagement
     static class TestConfiguration extends RequeryTestConfiguration {
 
         @Bean
@@ -73,26 +75,37 @@ public class TransactionalRepositoryTest {
     }
 
     @Test
-    public void _0_transaction_rollback() {
-        repository.deleteAll();
+    public void transaction_rollback() {
         try {
             runForRollback();
         } catch (Exception e) {
-            log.error("Should rollback !!!", e);
+            log.error("Should rollback !!!");
         }
-    }
-
-    @Test
-    public void _1_verify_rollback() {
         assertThat(repository.findAll().size()).isZero();
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     void runForRollback() {
         repository.save(RandomData.randomUser());
-        assertThat(transactionManager.getTransactionRequests()).isGreaterThan(0);
+        repository.save(null);
+    }
 
-        throw new RuntimeException("Boom!");
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @Test
+    public void requery_transaction_rollback() {
+        EntityDataStore<Object> dataStore = operations.getDataStore();
+
+        try {
+            dataStore.runInTransaction(() -> {
+                dataStore.insert(RandomData.randomUser());
+                dataStore.insert((BasicUser) null);
+                return null;
+            });
+        } catch (Exception e) {
+            log.warn("Rollbacked!!!");
+        }
+
+        assertThat(dataStore.count(BasicUser.class).get().value()).isEqualTo(0);
     }
 
     @Test
@@ -146,13 +159,18 @@ public class TransactionalRepositoryTest {
 
         @Override
         public void commit(@Nonnull final TransactionStatus status) throws TransactionException {
-            log.info("Commit transaction. status={}", status);
+            DefaultTransactionStatus txStatus = (DefaultTransactionStatus) status;
+//            RequeryTransactionObject txObject = (RequeryTransactionObject)txStatus.getTransaction();
+
+            log.warn("Commit transaction. status transaction={}, isNewTransaction={}", txStatus.getTransaction(), txStatus.isNewTransaction());
             txManager.commit(status);
         }
 
         @Override
         public void rollback(@Nonnull final TransactionStatus status) throws TransactionException {
-            log.info("Rollback transaction. status={}", status);
+            DefaultTransactionStatus txStatus = (DefaultTransactionStatus) status;
+//            RequeryTransactionObject txObject = (RequeryTransactionObject)txStatus.getTransaction();
+            log.warn("Rollback transaction. status transaction={}, isNewTransaction={}", txStatus.getTransaction(), txStatus.isNewTransaction());
             txManager.rollback(status);
         }
 

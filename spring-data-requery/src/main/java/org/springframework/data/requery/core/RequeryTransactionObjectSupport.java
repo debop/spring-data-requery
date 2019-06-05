@@ -17,17 +17,17 @@ import javax.annotation.Nullable;
 public abstract class RequeryTransactionObjectSupport implements SavepointManager, SmartTransactionObject {
 
     @Nullable
-    private TransactionHolder transactionHolder;
+    private RequeryTransactionHolder transactionHolder;
 
     @Nullable
     private Integer previousIsolationLevel;
 
-    public void setTransactionHolder(@Nullable TransactionHolder transactionHolder) {
+    void setTransactionHolder(@Nullable RequeryTransactionHolder transactionHolder) {
         this.transactionHolder = transactionHolder;
     }
 
-    public TransactionHolder getTransactionHolder() {
-        Assert.state(this.transactionHolder != null, "No TransactionHolder available");
+    public RequeryTransactionHolder getTransactionHolder() {
+        Assert.state(this.transactionHolder != null, "No RequeryTransactionHolder available");
         return this.transactionHolder;
     }
 
@@ -63,6 +63,4 @@ public abstract class RequeryTransactionObjectSupport implements SavepointManage
     public void flush() {
         // no-op
     }
-
-
 }

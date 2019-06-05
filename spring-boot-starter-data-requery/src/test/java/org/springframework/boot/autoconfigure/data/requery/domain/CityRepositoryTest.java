@@ -27,8 +27,6 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
@@ -91,17 +89,18 @@ public class CityRepositoryTest {
 
     @Test
     @Transactional
-    public void testTransaction() throws Exception {
+    @Rollback(false)
+    public void testTransaction() {
         repository.deleteAll();
 
         try {
             CityService service = new CityService(repository);
             service.saveCities(10);
         } catch (Exception e) {
-            log.error("Fail to save cities", e);
+            log.error("Fail to save cities");
         }
 
-//        assertThat(repository.count()).isEqualTo(0);
+        assertThat(repository.count()).isEqualTo(0);
     }
 
     static class CityService {
@@ -112,20 +111,16 @@ public class CityRepositoryTest {
             this.repository = repository;
         }
 
-        @Transactional(propagation = Propagation.REQUIRES_NEW)
+        @Transactional
         public void saveCities(int count) {
-            try {
-                for (int i = 0; i < count; i++) {
-                    City city = new City("Seoul " + i, "Korea " + i);
+            for (int i = 0; i < count; i++) {
+                City city = new City("Seoul " + i, "Korea " + i);
 
-                    repository.save(city);
+                repository.save(city);
 
-                    if (i == 5) {
-                        repository.save(new City(null, null));
-                    }
+                if (i == 5) {
+                    repository.save(new City(null, null));
                 }
-            } catch(Exception e) {
-                log.error("Fail to save cities", e);
             }
         }
     }

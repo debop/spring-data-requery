@@ -107,12 +107,12 @@ public class RequeryQueryMethod extends QueryMethod {
 
             String paramName = parameter.getName().orElse("");
 
-            if (StringUtils.hasText(annotatedQuery) && StringUtils.hasText(paramName)
-                && !annotatedQuery.contains(":" + paramName)
-                && !annotatedQuery.contains("#" + paramName)) {
+            if (StringUtils.hasText(annotatedQuery) &&
+                StringUtils.hasText(paramName) &&
+                (annotatedQuery.contains(":" + paramName) || annotatedQuery.contains("#" + paramName))) {
                 throw new IllegalStateException(
                     String.format("Using named parameters for queryMethod [%s] but parameter '%s' not found in annotated query '%s'!",
-                                  method, parameter.getName(), annotatedQuery));
+                                  method, parameter.getName().get(), annotatedQuery));
             }
         }
     }

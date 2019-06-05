@@ -21,7 +21,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.query.Param;
 import org.springframework.data.requery.annotation.Query;
 import org.springframework.data.requery.domain.sample.AbstractRole;
 import org.springframework.data.requery.domain.sample.Role;
@@ -90,8 +89,8 @@ public interface UserRepository extends RequeryRepository<User, Integer>, UserRe
     List<User> findByFirstnameLike(String firstname);
 
     // NOTE: Not supported Named Parameter
-    @Query("select * from SD_User u where u.firstname like :firstname%")
-    List<User> findByFirstnameLikeNamed(@Param("firstname") String firstname);
+//    @Query("select * from SD_User u where u.firstname like :firstname%")
+//    List<User> findByFirstnameLikeNamed(@Param("firstname") String firstname);
 
     /**
      * Manipulating query to set all {@link User}'s names to the given one.

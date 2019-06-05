@@ -19,7 +19,6 @@ package org.springframework.data.requery.repository;
 import io.requery.query.Result;
 import io.requery.query.Tuple;
 import io.requery.query.element.QueryElement;
-import io.requery.sql.StatementExecutionException;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
@@ -910,14 +909,14 @@ public class UserRepositoryTest {
     }
 
     // NOTE: Not supported Named parameter
-    @Test(expected = StatementExecutionException.class)
-    public void executesManualQueryWithNamedLikeExpressionCorrectly() {
-
-        flushTestUsers();
-
-        List<User> result = repository.findByFirstnameLikeNamed("Ni%");
-        assertThat(result).containsOnly(fourthUser);
-    }
+//    @Test(expected = StatementExecutionException.class)
+//    public void executesManualQueryWithNamedLikeExpressionCorrectly() {
+//
+//        flushTestUsers();
+//
+//        List<User> result = repository.findByFirstnameLikeNamed("Ni%");
+//        assertThat(result).containsOnly(fourthUser);
+//    }
 
     @Test
     public void executesDerivedCountQueryToLong() {

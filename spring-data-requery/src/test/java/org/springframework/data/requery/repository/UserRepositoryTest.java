@@ -91,7 +91,7 @@ import static org.springframework.data.requery.utils.RequeryUtils.unwrap;
 public class UserRepositoryTest {
 
     @Configuration
-    @EnableTransactionManagement(proxyTargetClass = true)
+    @EnableTransactionManagement
     @EnableRequeryRepositories(basePackageClasses = { UserRepository.class })
     static class TestConfiguration extends InfrastructureConfig {
 
@@ -506,6 +506,7 @@ public class UserRepositoryTest {
         assertThat(users.getNumberOfElements()).isEqualTo(1);
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS)
     @Test
     public void executesMethodWithAnnotatedNamedParametersCorrectly() {
 
@@ -513,6 +514,10 @@ public class UserRepositoryTest {
         secondUser = repository.save(secondUser);
 
         assertThat(repository.findByLastnameOrFirstname("Ahn", "Debop"))
+            .hasSize(2)
+            .containsOnly(firstUser, secondUser);
+
+        assertThat(repository.findByLastnameOrAge("Ahn", 51))
             .hasSize(2)
             .containsOnly(firstUser, secondUser);
     }

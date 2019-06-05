@@ -73,6 +73,7 @@ subprojects {
     dependencyManagement {
         imports {
             mavenBom "org.springframework.boot:spring-boot-dependencies:$spring_boot_version"
+            mavenBom "org.springframework.cloud:spring-cloud-dependencies:Finchley.SR3"
         }
 
         dependencies {

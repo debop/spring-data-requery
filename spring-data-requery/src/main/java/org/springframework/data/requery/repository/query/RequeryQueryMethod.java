@@ -87,34 +87,41 @@ public class RequeryQueryMethod extends QueryMethod {
                       String.format("Modifying queryMethod must not contains %s!", Parameters.TYPES));
 
         if (isAnnotatedQuery()) {
+            log.info("requery가 아직 named parameter 를 지원히지 않으므로, @Query 내에서는 `?` 만 사용하세요.");
             assertParamterNamesInAnnotatedQuery();
         }
     }
 
     /**
+     * TODO: requery 1.6.0 까지는 지원하지 않으므로, 사용할 수 없습니다.
      * Check for named paraemter in AnnotatedQuery
      */
     private void assertParamterNamesInAnnotatedQuery() {
         String annotatedQuery = getAnnotatedQuery();
 
         if (StringUtils.hasText(annotatedQuery)) {
+            if (annotatedQuery.contains("?")) {
+                return;
+            }
             log.debug("check named parameters. annotatedQuery={}", annotatedQuery);
 
             for (Parameter parameter : getParameters()) {
-                log.trace("parameter={}", parameter.getName().orElse(""));
+                log.trace("parameter={}", parameter.getName());
                 if (!parameter.isNamedParameter()) {
                     continue;
                 }
-
                 String paramName = parameter.getName().orElse("");
+                log.trace("paramName={}", paramName);
 
-                // TODO: 현재 requery 1.6.0 에서는 Named parameter를 지원하지 않으므로 Named parameter가 있는 경우에 예외를 발생시킨다.
-                boolean hasNamedParameter = annotatedQuery.contains(":" + paramName) || annotatedQuery.contains("#" + paramName);
+                if (StringUtils.hasText(paramName)) {
+                    // TODO: 현재 requery 1.6.0 에서는 Named parameter를 지원하지 않으므로 Named parameter가 있는 경우에 예외를 발생시킨다.
+                    boolean hasNamedParameter = annotatedQuery.contains(":" + paramName) || annotatedQuery.contains("#" + paramName);
 
-                if (StringUtils.hasText(paramName) && !hasNamedParameter) {
-                    throw new IllegalStateException(
-                        String.format("Using named parameters for queryMethod [%s] but parameter '%s' not found in annotated query '%s'!",
-                                      method, parameter.getName().orElse(" "), annotatedQuery));
+                    if (!hasNamedParameter) {
+                        throw new IllegalStateException(
+                            String.format("Using named parameters for queryMethod [%s] but parameter '%s' not found in annotated query '%s'!",
+                                          method, parameter.getName().orElse(" "), annotatedQuery));
+                    }
                 }
             }
         }

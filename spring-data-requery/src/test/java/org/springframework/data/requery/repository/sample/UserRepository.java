@@ -30,6 +30,7 @@ import org.springframework.data.requery.domain.sample.User;
 import org.springframework.data.requery.domain.sample.User_Colleagues;
 import org.springframework.data.requery.domain.sample.User_Role;
 import org.springframework.data.requery.repository.RequeryRepository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
@@ -105,8 +106,13 @@ public interface UserRepository extends RequeryRepository<User, Integer>, UserRe
     @Query("select count(*) from SD_User u where u.firstname = ?")
     Long countWithFirstname(String firstname);
 
+    @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
     @Query("select * from SD_User u where u.lastname = ? or u.firstname = ?")
-    List<User> findByLastnameOrFirstname(/*@Param("firstname") */String lastname, /*@Param("lastname") */String firstname);
+    List<User> findByLastnameOrFirstname(/*@Param("lastname") */String lastname, /*@Param("firstname") */String firstname);
+
+    @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
+    @Query("select * from SD_User u where u.lastname = ? or u.age = ?")
+    List<User> findByLastnameOrAge(String lastname, int age);
 
     @Query("select * from SD_User u where u.firstname = ? or u.lastname = ?")
     List<User> findByLastnameOrFirstnameUnannotated(String firstname, String lastname);

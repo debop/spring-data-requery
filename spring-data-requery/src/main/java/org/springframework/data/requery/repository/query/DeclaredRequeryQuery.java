@@ -66,7 +66,7 @@ public class DeclaredRequeryQuery extends AbstractRequeryQuery {
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
+    @Transactional(propagation = Propagation.SUPPORTS)
     public Object execute(@Nonnull final Object[] parameters) {
         return executeOutTransaction(parameters);
     }

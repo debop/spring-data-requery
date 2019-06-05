@@ -95,24 +95,27 @@ public class RequeryQueryMethod extends QueryMethod {
      * Check for named paraemter in AnnotatedQuery
      */
     private void assertParamterNamesInAnnotatedQuery() {
-
         String annotatedQuery = getAnnotatedQuery();
 
-        for (Parameter parameter : getParameters()) {
-            log.debug("parameter={}", parameter.getName().orElse(""));
-            if (!parameter.isNamedParameter()) {
-                continue;
-            }
+        if (StringUtils.hasText(annotatedQuery)) {
+            log.debug("check named parameters. annotatedQuery={}", annotatedQuery);
 
-            String paramName = parameter.getName().orElse("");
+            for (Parameter parameter : getParameters()) {
+                log.trace("parameter={}", parameter.getName().orElse(""));
+                if (!parameter.isNamedParameter()) {
+                    continue;
+                }
 
-            // 현재 requery 1.6.0 에서는 Named parameter를 지원하지 않으므로 Named parameter가 있는 경우에 예외를 발생시킨다.
-            if (StringUtils.hasText(annotatedQuery) &&
-                StringUtils.hasText(paramName) &&
-                (annotatedQuery.contains(":" + paramName) || annotatedQuery.contains("#" + paramName))) {
-                throw new IllegalStateException(
-                    String.format("Using named parameters for queryMethod [%s] but parameter '%s' not found in annotated query '%s'!",
-                                  method, parameter.getName().get(), annotatedQuery));
+                String paramName = parameter.getName().orElse("");
+
+                // TODO: 현재 requery 1.6.0 에서는 Named parameter를 지원하지 않으므로 Named parameter가 있는 경우에 예외를 발생시킨다.
+                boolean hasNamedParameter = annotatedQuery.contains(":" + paramName) || annotatedQuery.contains("#" + paramName);
+
+                if (StringUtils.hasText(paramName) && !hasNamedParameter) {
+                    throw new IllegalStateException(
+                        String.format("Using named parameters for queryMethod [%s] but parameter '%s' not found in annotated query '%s'!",
+                                      method, parameter.getName().orElse(" "), annotatedQuery));
+                }
             }
         }
     }

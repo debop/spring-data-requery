@@ -50,17 +50,19 @@ import static org.mockito.Mockito.when;
  * @author debop
  * @since 18. 6. 14
  */
+@SuppressWarnings("unchecked")
 @RunWith(MockitoJUnitRunner.class)
 public class RequeryQueryMethodTest {
 
-    static final Class<?> DOMAIN_CLASS = User.class;
-    static final String METHOD_NAME = "findByFirstname";
+    private static final Class<?> DOMAIN_CLASS = User.class;
+    private static final String METHOD_NAME = "findByFirstname";
 
     @Mock RepositoryMetadata metadata;
 
-    ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
+    private ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
 
-    Method invalidReturnType, pageableAndSort, pageableTwice, sortableTwice, findWithLockMethod, findsProjections,
+    private Method invalidReturnType, pageableAndSort, pageableTwice,
+        sortableTwice, findWithLockMethod, findsProjections,
         findsProjection, queryMethodWithCustomEntityFetchGraph;
 
     @Before
@@ -206,7 +208,7 @@ public class RequeryQueryMethodTest {
         assertThat(new RequeryQueryMethod(findsProjection, metadata, factory).isQueryForEntity()).isFalse();
     }
 
-    static interface InvalidRepository extends Repository<User, Integer> {
+    interface InvalidRepository extends Repository<User, Integer> {
 
         // Invalid return type
         User findByFirstname(String firstname, Pageable pageable);
@@ -231,12 +233,12 @@ public class RequeryQueryMethodTest {
         // Modifying and Sort is not allowed
         void updateMethod(String firstname, Sort sort);
 
-        // Typo in named parameter
+        // Invalid Typo in named parameter
         @Query("select * from SD_User u where u.firstname = :foo")
         List<User> findByAnnotatedQuery(@Param("param") String param);
     }
 
-    static interface ValidRepository extends Repository<User, Integer> {
+    interface ValidRepository extends Repository<User, Integer> {
 
         @Query(value = "query")
         List<User> findByLastname(String lastname);
@@ -257,7 +259,7 @@ public class RequeryQueryMethodTest {
 
     }
 
-    static interface RequeryRepositoryOverride extends RequeryRepository<User, Integer> {
+    interface RequeryRepositoryOverride extends RequeryRepository<User, Integer> {
 
         @Nonnull
         List<User> findAll();

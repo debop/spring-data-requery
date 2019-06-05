@@ -21,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.requery.annotation.Query;
 import org.springframework.data.requery.domain.sample.AbstractRole;
 import org.springframework.data.requery.domain.sample.Role;
@@ -31,6 +32,7 @@ import org.springframework.data.requery.domain.sample.User_Role;
 import org.springframework.data.requery.repository.RequeryRepository;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -51,12 +53,13 @@ public interface UserRepository extends RequeryRepository<User, Integer>, UserRe
 
     List<User> findByLastname(String lastname);
 
+    @Nonnull
     @Override
-    Optional<User> findById(Integer primaryKey);
+    Optional<User> findById(@Nonnull Integer primaryKey);
 
     @Transactional
     @Override
-    void deleteById(Integer id);
+    void deleteById(@Nonnull Integer id);
 
     User findByEmailAddress(String emailAddress);
 
@@ -89,8 +92,8 @@ public interface UserRepository extends RequeryRepository<User, Integer>, UserRe
     List<User> findByFirstnameLike(String firstname);
 
     // NOTE: Not supported Named Parameter
-//    @Query("select * from SD_User u where u.firstname like :firstname%")
-//    List<User> findByFirstnameLikeNamed(@Param("firstname") String firstname);
+    @Query("select * from SD_User u where u.firstname like :firstname%")
+    List<User> findByFirstnameLikeNamed(@Param("firstname") String firstname);
 
     /**
      * Manipulating query to set all {@link User}'s names to the given one.
@@ -158,7 +161,7 @@ public interface UserRepository extends RequeryRepository<User, Integer>, UserRe
     List<User> findByActiveFalse();
 
     User findByIdAndActiveFalse(Integer id);
-    
+
     // HINT: @Query 를 쓰던가, requery api 를 사용하던가 같다.
     // @Query("select u.* from SD_User u inner join User_Colleagues uc on (u.id = uc.SD_UserId1) where uc.SD_UserId2 = ?")
     default List<User> findColleaguesFor(Integer userId) {

@@ -19,6 +19,7 @@ package org.springframework.data.requery.repository;
 import io.requery.query.Result;
 import io.requery.query.Tuple;
 import io.requery.query.element.QueryElement;
+import io.requery.sql.StatementExecutionException;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
@@ -121,15 +122,15 @@ public class UserRepositoryTest {
         }
     }
 
-    @Autowired RequeryOperations operations;
+    @Autowired private RequeryOperations operations;
 
     // CUT
-    @Autowired UserRepository repository;
+    @Autowired private UserRepository repository;
 
     // Test fixture
-    User firstUser, secondUser, thirdUser, fourthUser;
-    Integer id;
-    Role adminRole;
+    private User firstUser, secondUser, thirdUser, fourthUser;
+    private Integer id;
+    private Role adminRole;
 
     private static User createUser() {
         return createUser(null, null, null);
@@ -360,7 +361,7 @@ public class UserRepositoryTest {
 
         flushTestUsers();
 
-        User firstReferenceUser = repository.findById(requireNonNull(firstUser.getId())).get();
+        User firstReferenceUser = repository.findById(requireNonNull(firstUser.getId())).orElse(null);
         assertThat(firstReferenceUser).isEqualTo(firstUser);
 
         Set<AbstractUser> colleagues = firstReferenceUser.getColleagues();
@@ -712,7 +713,7 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void executesAnnotatedCollectionMethodCorrectly() throws InterruptedException {
+    public void executesAnnotatedCollectionMethodCorrectly() {
 
         flushTestUsers();
 
@@ -798,7 +799,7 @@ public class UserRepositoryTest {
         assertThat(repository.findAllById(set)).containsOnly(firstUser, secondUser);
     }
 
-    protected void flushTestUsers() {
+    private void flushTestUsers() {
 
         operations.upsert(adminRole);
 
@@ -909,14 +910,14 @@ public class UserRepositoryTest {
     }
 
     // NOTE: Not supported Named parameter
-//    @Test(expected = StatementExecutionException.class)
-//    public void executesManualQueryWithNamedLikeExpressionCorrectly() {
-//
-//        flushTestUsers();
-//
-//        List<User> result = repository.findByFirstnameLikeNamed("Ni%");
-//        assertThat(result).containsOnly(fourthUser);
-//    }
+    @Test(expected = StatementExecutionException.class)
+    public void executesManualQueryWithNamedLikeExpressionCorrectly() {
+
+        flushTestUsers();
+
+        List<User> result = repository.findByFirstnameLikeNamed("Ni%");
+        assertThat(result).containsOnly(fourthUser);
+    }
 
     @Test
     public void executesDerivedCountQueryToLong() {

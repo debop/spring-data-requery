@@ -44,7 +44,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Slf4j
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { RequeryTestConfiguration.class })
-@Transactional
+@Transactional(propagation = Propagation.NOT_SUPPORTED)
 @Rollback(false)
 public class DeclaredRequeryQueryTest {
 
@@ -95,10 +95,10 @@ public class DeclaredRequeryQueryTest {
         List<BasicUser> results = repository.findWithLimits(2);
         assertThat(results).hasSize(2);
 
-//        List<BasicUser> results2 = repository.findWithLimits(3);
-//        assertThat(results2).hasSize(3);
-//
-//        assertThat(repository.findWithLimits(2)).hasSize(2);
+        List<BasicUser> results2 = repository.findWithLimits(3);
+        assertThat(results2).hasSize(3);
+
+        assertThat(repository.findWithLimits(2)).hasSize(2);
 
         assertThat(repository.findAll().size()).isGreaterThan(0);
     }
@@ -133,7 +133,6 @@ public class DeclaredRequeryQueryTest {
     }
 
     @Test
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void queryByLocalData() {
         repository.deleteAll();
 
@@ -152,7 +151,6 @@ public class DeclaredRequeryQueryTest {
         assertThat(notexists).isEmpty();
     }
 
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     interface SampleQueryRepository extends RequeryRepository<BasicUser, Long> {
 
         @Query("select * from basic_user u where u.email = ?")

@@ -16,7 +16,7 @@
 
 package org.springframework.data.requery.configs;
 
-import io.requery.cache.WeakEntityCache;
+import io.requery.cache.EmptyEntityCache;
 import io.requery.meta.EntityModel;
 import io.requery.sql.ConfigurationBuilder;
 import io.requery.sql.EntityDataStore;
@@ -78,8 +78,7 @@ public abstract class AbstractRequeryConfiguration {
         Assert.notNull(getEntityModel(), "enittymodel must not be null");
 
         return new ConfigurationBuilder(dataSource, entityModel)
-            // .setEntityCache(new EmptyEntityCache())
-            .setEntityCache(new WeakEntityCache())
+            .setEntityCache(new EmptyEntityCache())
             .addStatementListener(new LogbackListener<>())
             .build();
     }
@@ -110,22 +109,10 @@ public abstract class AbstractRequeryConfiguration {
         return context;
     }
 
-    //        @Autowired private DataSource dataSource;
     @Bean
     public PlatformTransactionManager transactionManager(@Nonnull final EntityDataStore<Object> entityDataStore) {
-
-//        bitronix.tm.Configuration conf = TransactionManagerServices.getConfiguration();
-//        conf.setServerId("jvm-1");
-//        conf.setLogPart1Filename("./tx-logs/part1.btm");
-//        conf.setLogPart2Filename("./tx-logs/part2.btm");
-//
-//        BitronixTransactionManager bitronixTransactionManager = TransactionManagerServices.getTransactionManager();
-//        return new JtaTransactionManager(bitronixTransactionManager, bitronixTransactionManager);
-
-//        return new DataSourceTransactionManager(dataSource);
         return new RequeryTransactionManager(entityDataStore);
     }
-
 
     @Autowired
     io.requery.sql.Configuration configuration;

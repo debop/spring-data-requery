@@ -38,7 +38,6 @@ import io.requery.sql.EntityDataStore;
 import org.springframework.data.requery.mapping.RequeryMappingContext;
 import org.springframework.data.requery.utils.Iterables;
 import org.springframework.data.requery.utils.RequeryUtils;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -122,12 +121,12 @@ public interface RequeryOperations {
         return getDataStore().refreshAll(entity);
     }
 
-    @Transactional
+    // @Transactional
     default <E> E upsert(@Nonnull final E entity) {
         return getDataStore().upsert(entity);
     }
 
-    @Transactional
+    // @Transactional
     default <E> List<E> upsertAll(@Nonnull final Iterable<E> entities) {
         return Iterables.toList(getDataStore().upsert(entities));
     }
@@ -136,28 +135,28 @@ public interface RequeryOperations {
         return getDataStore().insert(entity);
     }
 
-    @Transactional
+    // @Transactional
     default <E, K> K insert(@Nonnull final E entity, @Nonnull final Class<K> keyClass) {
         return getDataStore().insert(entity, keyClass);
     }
 
-    @Transactional
+    // @Transactional
     default <E> Insertion<? extends Result<Tuple>> insert(@Nonnull final Class<E> entityType) {
         return getDataStore().insert(entityType);
     }
 
     @SuppressWarnings("unchecked")
-    @Transactional
+    // @Transactional
     default <E> InsertInto<? extends Result<Tuple>> insert(@Nonnull final Class<E> entityType, QueryAttribute<E, ?>... attributes) {
         return getDataStore().insert(entityType, attributes);
     }
 
-    @Transactional
+    // @Transactional
     default <E> List<E> insertAll(@Nonnull final Iterable<E> entities) {
         return Iterables.toList(getDataStore().insert(entities));
     }
 
-    @Transactional
+    // @Transactional
     default <E, K> List<K> insertAll(@Nonnull final Iterable<E> entities, @Nonnull final Class<K> keyClass) {
         return Iterables.toList(getDataStore().insert(entities, keyClass));
     }
@@ -167,12 +166,12 @@ public interface RequeryOperations {
         return getDataStore().update();
     }
 
-    @Transactional
+    // @Transactional
     default <E> E update(@Nonnull final E entity) {
         return getDataStore().update(entity);
     }
 
-    @Transactional
+    // @Transactional
     default <E> E update(@Nonnull final E entity, final Attribute<?, ?>... attributes) {
         return getDataStore().update(entity, attributes);
     }
@@ -181,7 +180,7 @@ public interface RequeryOperations {
         return getDataStore().update(entityType);
     }
 
-    @Transactional
+    // @Transactional
     default <E> List<E> updateAll(@Nonnull final Iterable<E> entities) {
         return Iterables.toList(getDataStore().update(entities));
     }
@@ -194,17 +193,17 @@ public interface RequeryOperations {
         return getDataStore().delete(entityType);
     }
 
-    @Transactional
+    // @Transactional
     default <E> void delete(@Nonnull final E entity) {
         getDataStore().delete(entity);
     }
 
-    @Transactional
+    // @Transactional
     default <E> void deleteAll(@Nonnull final Iterable<E> entities) {
         getDataStore().delete(entities);
     }
 
-    @Transactional
+    // @Transactional
     default <E> Integer deleteAll(@Nonnull final Class<E> entityType) {
         return getDataStore().delete(entityType).get().value();
     }

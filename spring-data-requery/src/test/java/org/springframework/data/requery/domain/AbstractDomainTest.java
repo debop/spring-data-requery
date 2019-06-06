@@ -31,13 +31,6 @@ import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
-/**
- * org.springframework.data.requery.domain.AbstractDomainTest
- *
- * @author debop
- * @since 18. 6. 4
- */
 @Slf4j
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { RequeryTestConfiguration.class })

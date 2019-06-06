@@ -59,8 +59,11 @@ public class RequeryTemplate implements RequeryOperations {
         if (dataStore.transaction().active()) {
             log.debug("Transaction is active already, so run statement in currently active transaction");
             try {
-                return callable.call();
+                V result = callable.call();
+                dataStore.transaction().commit();
+                return result;
             } catch (Exception e) {
+                dataStore.transaction().rollback();
                 throw new RequeryExecutionException("Fail to requery query.", e);
             }
         } else {
@@ -78,8 +81,11 @@ public class RequeryTemplate implements RequeryOperations {
         if (dataStore.transaction().active()) {
             log.debug("Transaction is active already, so run statement in currently active transaction");
             try {
-                return block.apply(dataStore);
+                V result = block.apply(dataStore);
+                dataStore.transaction().commit();
+                return result;
             } catch (Exception e) {
+                dataStore.transaction().rollback();
                 throw new RequeryExecutionException("Fail to requery query.", e);
             }
         } else {

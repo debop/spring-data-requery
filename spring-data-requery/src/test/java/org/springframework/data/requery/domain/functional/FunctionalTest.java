@@ -22,7 +22,6 @@ import io.requery.proxy.EntityProxy;
 import io.requery.proxy.PropertyState;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.data.requery.domain.AbstractDomainTest;
 import org.springframework.data.requery.domain.EntityState;
@@ -36,6 +35,8 @@ import org.springframework.data.requery.domain.model.GroupType;
 import org.springframework.data.requery.domain.model.Person;
 import org.springframework.data.requery.domain.model.Phone;
 import org.springframework.data.requery.domain.model.RandomData;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
@@ -63,6 +64,7 @@ import static org.assertj.core.api.Assertions.fail;
  */
 @Slf4j
 @Transactional
+@Rollback(false)
 public class FunctionalTest extends AbstractDomainTest {
 
     private static final int COUNT = 30;
@@ -373,9 +375,11 @@ public class FunctionalTest extends AbstractDomainTest {
         assertThat(requeryOperations.count(Address.class).get().value()).isEqualTo(0);
     }
 
-    @Ignore("Spring @Transactional과 requery 자체 transaction을 함께 쓰지 마세요")
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Test
     public void rollback_transaction() {
+        requeryOperations.deleteAll(Person.class);
+
         List<Long> ids = new ArrayList<>();
 
         try {
@@ -396,7 +400,8 @@ public class FunctionalTest extends AbstractDomainTest {
             log.info("Rollback executed.");
         }
         log.debug("ids={}", ids);
-        assertThat(requeryOperations.count(Person.class).get().value()).isEqualTo(0);
+
+        assertThat(requeryOperations.count(Person.class).get().value()).isLessThan(ids.size());
     }
 
     @Test
@@ -676,7 +681,11 @@ public class FunctionalTest extends AbstractDomainTest {
     }
 
     @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void delete_cascade_one_to_many() {
+        requeryOperations.deleteAll(Phone.class);
+        requeryOperations.deleteAll(Person.class);
+
         Person person = RandomData.randomPerson();
         requeryOperations.insert(person);
 

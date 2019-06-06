@@ -42,7 +42,7 @@ plugins {
 apply plugin: 'nebula.nebula-release'
 
 allprojects {
-    group = 'com.coupang'
+    group = 'com.coupang.requery'
     version = "$baseVersion" + "$snapshotVersion"
 
     repositories {
@@ -57,7 +57,7 @@ subprojects {
     apply plugin: 'java'
 
     apply plugin: 'propdeps'
-    apply plugin: 'propdeps-maven'
+    apply plugin: 'propdeps-maven'`
     apply plugin: 'propdeps-idea'
 
     apply plugin: "io.spring.dependency-management"

@@ -7,6 +7,9 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionStatus;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import javax.annotation.Nonnull;
 
 /**
  * AbstractRequeryTransactionManager
@@ -15,23 +18,24 @@ import org.springframework.transaction.support.DefaultTransactionStatus;
  */
 @Slf4j
 abstract class AbstractRequeryTransactionManager implements PlatformTransactionManager {
-    protected final EntityDataStore<Object> entityDataStore;
 
+    protected final EntityDataStore<Object> entityDataStore;
     private ThreadLocal<Integer> transactionCount = ThreadLocal.withInitial(() -> 0);
 
-    AbstractRequeryTransactionManager(EntityDataStore<Object> entityDataStore) {
+    AbstractRequeryTransactionManager(@Nonnull final EntityDataStore<Object> entityDataStore) {
         this.entityDataStore = entityDataStore;
     }
 
     @Override
     public TransactionStatus getTransaction(TransactionDefinition definition) throws TransactionException {
         increaseTransactionCount();
-        log.info("GetTransaction... transaction count={}, definition={}", transactionCount.get(), definition);
+        log.trace("GetTransaction... transaction count={}, definition={}", transactionCount.get(), definition);
 
         if (!definition.isReadOnly() && !entityDataStore.transaction().active()) {
-            log.info("Begin transaction. definition={}", definition);
+            log.debug("Begin Requery transaction. definition={}", definition);
             entityDataStore.transaction().begin();
         }
+        TransactionSynchronizationManager.setCurrentTransactionReadOnly(definition.isReadOnly());
 
         return new DefaultTransactionStatus(entityDataStore.transaction(),
                                             true,
@@ -45,9 +49,9 @@ abstract class AbstractRequeryTransactionManager implements PlatformTransactionM
     public void commit(TransactionStatus status) throws TransactionException {
         if (entityDataStore.transaction().active()) {
             decreaseTransactionCount();
-            log.info("commit ... transaction count={}", transactionCount.get());
+            log.debug("Commit ... transaction count={}, status={}", transactionCount.get(), getTransactionStatusDescription(status));
             if (transactionCount.get() == 0) {
-                log.info("Commit transaction. status={}", status);
+                log.info("Commit Requery transaction. status={}", getTransactionStatusDescription(status));
                 entityDataStore.transaction().commit();
                 entityDataStore.transaction().close();
                 removeTransactionCount();
@@ -57,12 +61,19 @@ abstract class AbstractRequeryTransactionManager implements PlatformTransactionM
 
     @Override
     public void rollback(TransactionStatus status) throws TransactionException {
+        log.debug("Rollback ...");
         if (entityDataStore.transaction().active()) {
-            log.warn("Rollback transaction. status={}", status);
+            log.warn("Rollback Requery transaction. status={}", getTransactionStatusDescription(status));
             entityDataStore.transaction().rollback();
             entityDataStore.transaction().close();
             removeTransactionCount();
         }
+    }
+
+    private String getTransactionStatusDescription(TransactionStatus status) {
+        return "isCompleted=" + status.isCompleted()
+               + ", isNewTransaction=" + status.isNewTransaction()
+               + ", isRollbackOnly=" + status.isRollbackOnly();
     }
 
     private void increaseTransactionCount() {

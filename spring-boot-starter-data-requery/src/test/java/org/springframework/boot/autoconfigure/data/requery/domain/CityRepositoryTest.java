@@ -97,7 +97,7 @@ public class CityRepositoryTest {
             CityService service = new CityService(repository);
             service.saveCities(10);
         } catch (Exception e) {
-            log.error("Fail to save cities");
+            log.error("Fail to save cities", e);
         }
 
         assertThat(repository.count()).isEqualTo(0);

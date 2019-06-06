@@ -25,11 +25,13 @@ import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveSupport;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import org.springframework.data.requery.domain.AbstractDomainTest;
 import org.springframework.data.requery.domain.RandomData;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,13 +50,14 @@ import static org.assertj.core.api.Fail.fail;
  *
  * @author Diego on 2018. 6. 12..
  */
+@Ignore("Reactive 방식은 Spring Transactional과 묶이지 않는다.")
 @Slf4j
-@Transactional(propagation = Propagation.NOT_SUPPORTED)
 public class ReactiveTest extends AbstractDomainTest {
 
     private ReactiveEntityStore<Object> reactiveStore;
 
     @Before
+    @Transactional
     public void setup() {
         reactiveStore = ReactiveSupport.toReactiveStore(dataStore);
         requeryOperations.deleteAll(BasicGroup.class);
@@ -209,6 +212,7 @@ public class ReactiveTest extends AbstractDomainTest {
 
     @SuppressWarnings("ThrowableNotThrown")
     @Test
+    @Rollback(false)
     public void query_self_observable_relational() {
         AtomicInteger count = new AtomicInteger();
 

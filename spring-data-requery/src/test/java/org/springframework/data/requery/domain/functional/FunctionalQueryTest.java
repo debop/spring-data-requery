@@ -60,7 +60,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * @author Diego on 2018. 6. 9..
  */
 @Slf4j
-@Transactional
 public class FunctionalQueryTest extends AbstractDomainTest {
 
     private static final int COUNT = 100;
@@ -764,10 +763,8 @@ public class FunctionalQueryTest extends AbstractDomainTest {
 
         List<Long> resultIds = new ArrayList<>();
 
-        // raw 실행 결과인 {@link Result#close}를 다른 query를 사용하기 전에 닫아줘야 합니다.
         Result<Tuple> result = requeryOperations.raw("select * from Person");
         List<Tuple> rows = result.toList();
-        result.close();
         assertThat(rows).hasSize(count);
 
         for (int index = 0; index < rows.size(); index++) {

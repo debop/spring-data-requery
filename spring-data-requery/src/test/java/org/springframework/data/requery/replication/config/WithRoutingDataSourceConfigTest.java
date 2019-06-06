@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.requery.replication.domain.User;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
@@ -39,7 +38,7 @@ public class WithRoutingDataSourceConfigTest {
     }
 
     @Test
-    @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
+    @Transactional(readOnly = true)
     public void load_user_by_id_from_read_db() {
         User user = entityDataStore.findByKey(User.class, 1);
         assertThat(user).isNotNull();

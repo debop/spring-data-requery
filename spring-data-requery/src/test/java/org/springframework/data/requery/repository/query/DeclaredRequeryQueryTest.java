@@ -45,6 +45,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { RequeryTestConfiguration.class })
 @Transactional
+@Rollback(false)
 public class DeclaredRequeryQueryTest {
 
     @Inject RequeryOperations operations;
@@ -73,6 +74,7 @@ public class DeclaredRequeryQueryTest {
     }
 
     @Test
+    @Transactional(propagation = Propagation.SUPPORTS)
     public void collectionResultRawQuery() {
         Set<BasicUser> users = RandomData.randomUsers(100);
         repository.saveAll(users);
@@ -81,13 +83,15 @@ public class DeclaredRequeryQueryTest {
 
         List<BasicUser> results = repository.findAllByEmailMatches("debop%");
         assertThat(results.size()).isGreaterThan(0);
+
+        results = repository.findAllByEmailMatches("debop%");
+        assertThat(results.size()).isGreaterThan(0);
+
     }
 
     @Test
-    @Rollback(false)
+    @Transactional(propagation = Propagation.REQUIRED)
     public void queryWithLimits() {
-        repository.deleteAll();
-
         Set<BasicUser> users = RandomData.randomUsers(10);
         repository.saveAll(users);
 
@@ -96,10 +100,10 @@ public class DeclaredRequeryQueryTest {
         List<BasicUser> results = repository.findWithLimits(2);
         assertThat(results).hasSize(2);
 
-        List<BasicUser> results2 = repository.findWithLimits(3);
-        assertThat(results2).hasSize(3);
-
-        assertThat(repository.findWithLimits(2)).hasSize(2);
+//        List<BasicUser> results2 = repository.findWithLimits(3);
+//        assertThat(results2).hasSize(3);
+//
+//        assertThat(repository.findWithLimits(2)).hasSize(2);
     }
 
     @Test
@@ -132,6 +136,7 @@ public class DeclaredRequeryQueryTest {
     }
 
     @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void queryByLocalData() {
         repository.deleteAll();
 
@@ -150,7 +155,6 @@ public class DeclaredRequeryQueryTest {
         assertThat(notexists).isEmpty();
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
     interface SampleQueryRepository extends RequeryRepository<BasicUser, Long> {
 
         @Query("select * from basic_user u where u.email = ?")
@@ -168,7 +172,6 @@ public class DeclaredRequeryQueryTest {
         @Query("select u.id, u.name from basic_user u where u.email=?")
         List<Tuple> findAllIds(String email);
 
-        @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
         @Query("select * from basic_user u where u.birthday = ?")
         List<BasicUser> findByBirthday(LocalDate birthday);
     }

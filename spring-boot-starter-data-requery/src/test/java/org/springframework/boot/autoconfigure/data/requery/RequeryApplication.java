@@ -62,11 +62,10 @@ public class RequeryApplication {
 
         private final CityRepository repository;
 
-        public CityService(@Nonnull final CityRepository repository) {
+        CityService(@Nonnull final CityRepository repository) {
             this.repository = repository;
         }
 
-        @Transactional
         public void saveCities(int count) {
             for (int i = 0; i < count; i++) {
                 City city = new City();

@@ -28,8 +28,6 @@ import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.data.requery.annotation.Query;
 import org.springframework.data.requery.core.RequeryOperations;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -66,7 +64,6 @@ public class DeclaredRequeryQuery extends AbstractRequeryQuery {
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public Object execute(@Nonnull final Object[] parameters) {
         return executeOutTransaction(parameters);
     }

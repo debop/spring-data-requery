@@ -38,7 +38,6 @@ import io.requery.sql.EntityDataStore;
 import org.springframework.data.requery.mapping.RequeryMappingContext;
 import org.springframework.data.requery.utils.Iterables;
 import org.springframework.data.requery.utils.RequeryUtils;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
@@ -245,7 +244,6 @@ public interface RequeryOperations {
      * @param parameters parameters
      * @return 실행 결과. 다른 raw 를 사용학기 전에 꼭 {@link Result#close} 를 호출해야 합니다.
      */
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     default Result<Tuple> raw(@Nonnull final String query, final Object... parameters) {
         return getDataStore().raw(query, parameters);
     }
@@ -259,7 +257,6 @@ public interface RequeryOperations {
      * @param parameters parameters
      * @return 실행 결과. 다른 raw 를 사용학기 전에 꼭 {@link Result#close} 를 호출해야 합니다.
      */
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     default <E> Result<E> raw(@Nonnull final Class<E> entityType,
                               @Nonnull final String query,
                               final Object... parameters) {

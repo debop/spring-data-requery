@@ -57,7 +57,7 @@ subprojects {
     apply plugin: 'java'
 
     apply plugin: 'propdeps'
-    apply plugin: 'propdeps-maven'`
+    apply plugin: 'propdeps-maven'
     apply plugin: 'propdeps-idea'
 
     apply plugin: "io.spring.dependency-management"

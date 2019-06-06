@@ -8,6 +8,7 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.support.ResourceTransactionManager;
 
 import javax.annotation.Nonnull;
+import java.io.Serializable;
 
 /**
  * Requery용 {@link DataSourceTransactionManager}
@@ -17,13 +18,13 @@ import javax.annotation.Nonnull;
  */
 @Slf4j
 public class RequeryTransactionManager extends AbstractRequeryTransactionManager
-    implements ResourceTransactionManager, InitializingBean {
+    implements ResourceTransactionManager, InitializingBean, Serializable {
     private static final long serialVersionUID = 3291422158479490099L;
 
     // private EntityDataStore entityDataStore;
     private boolean enforceReadOnly = false;
 
-    public RequeryTransactionManager(@Nonnull final EntityDataStore entityDataStore) {
+    public RequeryTransactionManager(@Nonnull final EntityDataStore<Object> entityDataStore) {
         super(entityDataStore);
         // this.entityDataStore = entityDataStore;
         // setNestedTransactionAllowed(true);

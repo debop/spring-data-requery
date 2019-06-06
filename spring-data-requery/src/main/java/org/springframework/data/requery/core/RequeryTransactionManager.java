@@ -106,10 +106,12 @@ public class RequeryTransactionManager extends AbstractPlatformTransactionManage
 
         RequeryTransactionObject txObject = (RequeryTransactionObject) transaction;
         try {
+
             if (!txObject.hasTransactionHolder()) {
 
                 TransactionIsolation isolation = getTransactionIsolation(definition.getIsolationLevel());
                 Transaction trans = entityDataStore.transaction().begin(isolation);
+
 
                 log.info("Requery transaction begin... transaction={}, definition={}", trans, definition);
                 RequeryTransactionHolder holder = new RequeryTransactionHolder(trans, true);
@@ -133,7 +135,7 @@ public class RequeryTransactionManager extends AbstractPlatformTransactionManage
     @Override
     protected void prepareSynchronization(DefaultTransactionStatus status, TransactionDefinition definition) {
         super.prepareSynchronization(status, definition);
-        log.info("prepareSynchronization. status={}, definition={}", status, definition);
+        log.info("prepareSynchronization. status isNewTransaction={}, definition={}", status.isNewTransaction(), definition);
     }
 
     @Override
@@ -143,11 +145,8 @@ public class RequeryTransactionManager extends AbstractPlatformTransactionManage
         // NOTE: New transaction 이 아니면 commit 하지 않고, Skip 해야 한다.
         RequeryTransactionObject txObject = (RequeryTransactionObject) status.getTransaction();
         log.info("doCommit ... txObject={}", txObject);
-        if (txObject.isRollbackOnly()) {
-            return;
-        }
         try {
-            if (txObject.isNewTransactionHolder()) {
+            if (txObject.isNewTransactionHolder() && status.isNewTransaction()) {
                 if (txObject.hasTransactionHolder() && txObject.getTransactionHolder().isTransactionActive()) {
                     log.info("Commit transaction. transaction={}", txObject.getTransactionHolder().getTransaction());
                     txObject.getTransactionHolder().getTransaction().commit();
@@ -234,7 +233,7 @@ public class RequeryTransactionManager extends AbstractPlatformTransactionManage
     @Setter
     public static class RequeryTransactionObject extends RequeryTransactionObjectSupport {
 
-        private boolean newTransactionHolder;
+        private boolean newTransactionHolder = true;
 
         void setTransactionHolder(RequeryTransactionHolder transactionHolder, boolean isNewTransactionHolder) {
             setTransactionHolder(transactionHolder);

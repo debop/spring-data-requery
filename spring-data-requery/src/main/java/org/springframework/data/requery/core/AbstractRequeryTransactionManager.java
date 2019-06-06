@@ -27,11 +27,18 @@ abstract class AbstractRequeryTransactionManager implements PlatformTransactionM
     public TransactionStatus getTransaction(TransactionDefinition definition) throws TransactionException {
         increaseTransactionCount();
         log.info("GetTransaction... transaction count={}, definition={}", transactionCount.get(), definition);
-        if (!entityDataStore.transaction().active()) {
+
+        if (!definition.isReadOnly() && !entityDataStore.transaction().active()) {
             log.info("Begin transaction. definition={}", definition);
             entityDataStore.transaction().begin();
         }
-        return new DefaultTransactionStatus(entityDataStore.transaction(), true, true, false, false, null);
+
+        return new DefaultTransactionStatus(entityDataStore.transaction(),
+                                            true,
+                                            true,
+                                            definition.isReadOnly(),
+                                            false,
+                                            null);
     }
 
     @Override

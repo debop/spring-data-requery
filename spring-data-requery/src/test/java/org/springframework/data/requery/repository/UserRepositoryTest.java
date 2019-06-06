@@ -516,6 +516,10 @@ public class UserRepositoryTest {
             .hasSize(2)
             .containsOnly(firstUser, secondUser);
 
+        assertThat(repository.findByLastnameOrFirstname("Ahn", "Debop"))
+            .hasSize(2);
+//            .containsOnly(firstUser, secondUser);
+
         assertThat(repository.findByLastnameOrAge("Ahn", 51))
             .hasSize(2);
     }

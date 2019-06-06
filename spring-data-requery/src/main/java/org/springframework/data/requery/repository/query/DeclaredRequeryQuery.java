@@ -106,16 +106,13 @@ public class DeclaredRequeryQuery extends AbstractRequeryQuery {
             } else {
                 resultSet = castResult(contentResult);
             }
-
         } else if (getQueryMethod().isQueryForEntity()) {
             log.debug("Query for entity. entity={}", getQueryMethod().getEntityInformation().getJavaType());
             result = operations.raw(getQueryMethod().getEntityInformation().getJavaType(), query, parameters);
             resultSet = castResult(result);
-            result.close();
         } else {
             result = operations.raw(query, parameters);
             resultSet = castResult(result);
-            result.close();
         }
 
         return resultSet;
@@ -166,9 +163,7 @@ public class DeclaredRequeryQuery extends AbstractRequeryQuery {
         if (StringUtils.hasText(countQuery)) {
             try {
                 Result<Tuple> result = operations.raw(countQuery, values);
-                long count = result.first().get(0);
-                result.close();
-                return count;
+                return result.first().get(0);
             } catch (Exception e) {
                 log.error("Fail to retrieve count. query={}", query, e);
                 return 0L;
@@ -204,7 +199,6 @@ public class DeclaredRequeryQuery extends AbstractRequeryQuery {
         } else {
             casted = RequeryResultConverter.convertResult(result.firstOrNull());
         }
-        result.close();
         return casted;
     }
 

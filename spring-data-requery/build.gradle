@@ -64,6 +64,7 @@ dependencies {
     compile "org.springframework:spring-jdbc"
     compile "org.springframework:spring-tx"
     compile "org.springframework.data:spring-data-commons"
+    compile "org.springframework.boot:spring-boot-starter-jta-bitronix"
 
     optional "org.threeten:threetenbp"
     optional "joda-time:joda-time"

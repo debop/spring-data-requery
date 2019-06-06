@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.requery.annotation.Query;
 import org.springframework.data.requery.configs.RequeryTestConfiguration;
 import org.springframework.data.requery.core.RequeryOperations;
@@ -34,7 +35,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.inject.Inject;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
@@ -48,7 +48,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Rollback(false)
 public class DeclaredRequeryQueryTest {
 
-    @Inject RequeryOperations operations;
+    @Autowired
+    private RequeryOperations operations;
 
     SampleQueryRepository repository;
 
@@ -74,23 +75,17 @@ public class DeclaredRequeryQueryTest {
     }
 
     @Test
-    @Transactional(propagation = Propagation.SUPPORTS)
     public void collectionResultRawQuery() {
-        Set<BasicUser> users = RandomData.randomUsers(100);
+        Set<BasicUser> users = RandomData.randomUsers(10);
         repository.saveAll(users);
 
         assertThat(repository.count()).isGreaterThan(0);
 
-        List<BasicUser> results = repository.findAllByEmailMatches("debop%");
+        List<BasicUser> results = repository.findAllByEmailMatches("%example.com");
         assertThat(results.size()).isGreaterThan(0);
-
-        results = repository.findAllByEmailMatches("debop%");
-        assertThat(results.size()).isGreaterThan(0);
-
     }
 
     @Test
-    @Transactional(propagation = Propagation.REQUIRED)
     public void queryWithLimits() {
         Set<BasicUser> users = RandomData.randomUsers(10);
         repository.saveAll(users);
@@ -104,6 +99,8 @@ public class DeclaredRequeryQueryTest {
 //        assertThat(results2).hasSize(3);
 //
 //        assertThat(repository.findWithLimits(2)).hasSize(2);
+
+        assertThat(repository.findAll().size()).isGreaterThan(0);
     }
 
     @Test
@@ -155,6 +152,7 @@ public class DeclaredRequeryQueryTest {
         assertThat(notexists).isEmpty();
     }
 
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     interface SampleQueryRepository extends RequeryRepository<BasicUser, Long> {
 
         @Query("select * from basic_user u where u.email = ?")

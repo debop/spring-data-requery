@@ -37,6 +37,7 @@ import org.springframework.data.requery.domain.model.Group;
 import org.springframework.data.requery.domain.model.Person;
 import org.springframework.data.requery.domain.model.Phone;
 import org.springframework.data.requery.domain.model.RandomData;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,6 +61,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * @author Diego on 2018. 6. 9..
  */
 @Slf4j
+@Rollback(false)
 public class FunctionalQueryTest extends AbstractDomainTest {
 
     private static final int COUNT = 100;
@@ -751,15 +753,20 @@ public class FunctionalQueryTest extends AbstractDomainTest {
         assertThat(result.get(1).<String>get(0)).isEqualTo("Hello!");
     }
 
-    @Test
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void query_raw() {
-        int count = 5;
-
+    @Transactional
+    List<Person> insertPersons(int count) {
         List<Person> people = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
             people.add(requeryOperations.insert(RandomData.randomPerson()));
         }
+        return people;
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void query_raw() {
+        int count = 5;
+        List<Person> people = insertPersons(count);
 
         List<Long> resultIds = new ArrayList<>();
 
@@ -784,7 +791,6 @@ public class FunctionalQueryTest extends AbstractDomainTest {
 
         result = requeryOperations.raw("select count(*) from Person");
         int number = result.first().<Number>get(0).intValue();
-        result.close();
         assertThat(number).isEqualTo(count);
 
         result = requeryOperations.raw("select * from Person WHERE personId = ?", people.get(0));

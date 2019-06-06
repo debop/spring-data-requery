@@ -50,11 +50,14 @@ abstract class AbstractRequeryTransactionManager implements PlatformTransactionM
         if (entityDataStore.transaction().active()) {
             decreaseTransactionCount();
             log.debug("Commit ... transaction count={}, status={}", transactionCount.get(), getTransactionStatusDescription(status));
-            if (transactionCount.get() == 0) {
+            if (transactionCount.get() <= 0) {
                 log.info("Commit Requery transaction. status={}", getTransactionStatusDescription(status));
-                entityDataStore.transaction().commit();
-                entityDataStore.transaction().close();
                 removeTransactionCount();
+                try {
+                    entityDataStore.transaction().commit();
+                } finally {
+                    entityDataStore.transaction().close();
+                }
             }
         }
     }
@@ -64,9 +67,12 @@ abstract class AbstractRequeryTransactionManager implements PlatformTransactionM
         log.debug("Rollback ...");
         if (entityDataStore.transaction().active()) {
             log.warn("Rollback Requery transaction. status={}", getTransactionStatusDescription(status));
-            entityDataStore.transaction().rollback();
-            entityDataStore.transaction().close();
             removeTransactionCount();
+            try {
+                entityDataStore.transaction().rollback();
+            } finally {
+                entityDataStore.transaction().close();
+            }
         }
     }
 

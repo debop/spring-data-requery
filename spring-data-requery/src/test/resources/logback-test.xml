@@ -15,8 +15,9 @@
     <logger name="org.springframework.jdbc.datasource" level="TRACE"/>
     <logger name="org.springframework.transaction" level="TRACE"/>
 
-    <logger name="io.requery.sql" level="WARN"/>
-    <logger name="requery" level="WARN"/>
+    <logger name="io.requery.sql" level="TRACE"/>
+    <logger name="io.requery" level="TRACE"/>
+    <logger name="requery" level="TRACE"/>
 
     <root level="INFO">
         <appender-ref ref="console"/>

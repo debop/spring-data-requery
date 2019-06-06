@@ -132,7 +132,6 @@ public interface RequeryOperations {
         return Iterables.toList(getDataStore().upsert(entities));
     }
 
-    @Transactional
     default <E> E insert(@Nonnull final E entity) {
         return getDataStore().insert(entity);
     }
@@ -187,7 +186,6 @@ public interface RequeryOperations {
         return Iterables.toList(getDataStore().update(entities));
     }
 
-
     default Deletion<? extends Scalar<Integer>> delete() {
         return getDataStore().delete();
     }
@@ -196,6 +194,7 @@ public interface RequeryOperations {
         return getDataStore().delete(entityType);
     }
 
+    @Transactional
     default <E> void delete(@Nonnull final E entity) {
         getDataStore().delete(entity);
     }
@@ -236,27 +235,10 @@ public interface RequeryOperations {
         return getDataStore().count(entityType).from(entityType).where(condition).get().value() > 0;
     }
 
-    /**
-     * NOTE: raw 메소드는 자신만의 Connection을 가지므로, Transaction에 참여할 수 없습니다.
-     * 꼭 Transactional annotation에 propagation = Propagation.NOT_SUPPORTED 을 지정해주셔야 합니다.
-     *
-     * @param query      sql 구문
-     * @param parameters parameters
-     * @return 실행 결과. 다른 raw 를 사용학기 전에 꼭 {@link Result#close} 를 호출해야 합니다.
-     */
     default Result<Tuple> raw(@Nonnull final String query, final Object... parameters) {
         return getDataStore().raw(query, parameters);
     }
 
-    /**
-     * NOTE: raw 메소드는 자신만의 Connection을 가지므로, Transaction에 참여할 수 없습니다.
-     * 꼭 Transactional annotation에 propagation = Propagation.NOT_SUPPORTED 을 지정해주셔야 합니다.
-     *
-     * @param entityType 결과 entity type
-     * @param query      sql 구문
-     * @param parameters parameters
-     * @return 실행 결과. 다른 raw 를 사용학기 전에 꼭 {@link Result#close} 를 호출해야 합니다.
-     */
     default <E> Result<E> raw(@Nonnull final Class<E> entityType,
                               @Nonnull final String query,
                               final Object... parameters) {

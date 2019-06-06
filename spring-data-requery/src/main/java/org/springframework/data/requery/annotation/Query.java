@@ -17,8 +17,6 @@
 package org.springframework.data.requery.annotation;
 
 import org.springframework.data.annotation.QueryAnnotation;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -36,7 +34,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @QueryAnnotation
 @Documented
-@Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
 public @interface Query {
 
     /**

@@ -13,6 +13,7 @@ import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionSystemException;
+import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.transaction.support.ResourceTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -29,17 +30,16 @@ import java.sql.Connection;
  * @since 18. 6. 14
  */
 @Slf4j
-public class RequeryTransactionManager extends AbstractRequeryTransactionManager
+public class RequeryTransactionManager extends AbstractPlatformTransactionManager
     implements ResourceTransactionManager, InitializingBean {
     private static final long serialVersionUID = 3291422158479490099L;
 
-    // private EntityDataStore entityDataStore;
+    private EntityDataStore entityDataStore;
     private boolean enforceReadOnly = false;
 
     public RequeryTransactionManager(@Nonnull final EntityDataStore entityDataStore) {
-        super(entityDataStore);
-        // this.entityDataStore = entityDataStore;
-        // setNestedTransactionAllowed(true);
+        this.entityDataStore = entityDataStore;
+        setNestedTransactionAllowed(true);
         afterPropertiesSet();
     }
 
@@ -73,7 +73,7 @@ public class RequeryTransactionManager extends AbstractRequeryTransactionManager
     }
 
     @Nonnull
-//    @Override
+    @Override
     protected Object doGetTransaction() {
         log.info("doGetTransaction ...");
         RequeryTransactionObject txObject = new RequeryTransactionObject();
@@ -82,40 +82,43 @@ public class RequeryTransactionManager extends AbstractRequeryTransactionManager
             (RequeryTransactionHolder) TransactionSynchronizationManager.getResource(entityDataStore);
 
         if (holder != null) {
+            log.debug("Hodler exists. hodler={}", holder);
             txObject.setTransactionHolder(holder, false);
-            log.info("doGetTransaction. transaction={}", txObject.getTransactionHolder().getTransaction());
+
+            if (txObject.getTransactionHolder().hasTransaction()) {
+                log.info("doGetTransaction. transaction={}", txObject.getTransactionHolder().getTransaction());
+            }
         }
 
         return txObject;
     }
 
-    //    @Override
+    @Override
     protected boolean isExistingTransaction(Object transaction) throws TransactionException {
         RequeryTransactionObject txObject = (RequeryTransactionObject) transaction;
-        return txObject.hasTransactionHolder() && txObject.getTransactionHolder().isTransactionActive();
+        return txObject.hasTransactionHolder() && txObject.getTransactionHolder().hasTransaction();
     }
 
-    //    @Override
+    @Override
     protected void doBegin(@Nonnull Object transaction, @Nonnull TransactionDefinition definition) {
-//        if (enforceReadOnly || definition.isReadOnly()) {
-//            return;
-//        }
-        log.debug("doBegin transaction... definition={}, timeout={}, readOnly={}",
-                  definition, definition.getTimeout(), definition.isReadOnly());
+        log.info("doBegin transaction... definition={}, timeout={}, readOnly={}",
+                 definition, definition.getTimeout(), definition.isReadOnly());
 
         RequeryTransactionObject txObject = (RequeryTransactionObject) transaction;
         try {
             if (!txObject.hasTransactionHolder()) {
 
-                Transaction trans = entityDataStore.transaction().begin();
+                TransactionIsolation isolation = getTransactionIsolation(definition.getIsolationLevel());
+                Transaction trans = entityDataStore.transaction().begin(isolation);
+
                 log.info("Requery transaction begin... transaction={}, definition={}", trans, definition);
                 RequeryTransactionHolder holder = new RequeryTransactionHolder(trans, true);
                 txObject.setTransactionHolder(holder);
 
-//                int timeout = determineTimeout(definition);
-//                if (timeout != TransactionDefinition.TIMEOUT_DEFAULT) {
-//                    holder.setTimeoutInMillis(timeout);
-//                }
+                int timeout = determineTimeout(definition);
+                if (timeout != TransactionDefinition.TIMEOUT_DEFAULT) {
+                    holder.setTimeoutInMillis(timeout);
+                }
 
                 TransactionSynchronizationManager.bindResource(entityDataStore, holder);
             }
@@ -127,86 +130,85 @@ public class RequeryTransactionManager extends AbstractRequeryTransactionManager
         }
     }
 
-//    @Override
-//    protected void prepareSynchronization(DefaultTransactionStatus status, TransactionDefinition definition) {
-//        super.prepareSynchronization(status, definition);
-//        log.info("prepareSynchronization. status={}", status);
-//    }
+    @Override
+    protected void prepareSynchronization(DefaultTransactionStatus status, TransactionDefinition definition) {
+        super.prepareSynchronization(status, definition);
+        log.info("prepareSynchronization. status={}, definition={}", status, definition);
+    }
 
-    //    @Override
+    @Override
     protected void doCommit(@Nonnull final DefaultTransactionStatus status) {
-        log.debug("doCommit ... status={}", status);
-        RequeryTransactionObject txObject = (RequeryTransactionObject) status.getTransaction();
-        try {
-            log.info("Commit transaction. transaction={}", txObject.getTransactionHolder().getTransaction());
-            // txObject.getTransactionHolder().getTransaction().commit();
+        log.info("doCommit ... status={}", status);
 
-//            if (txObject.hasTransactionHolder() && txObject.getTransactionHolder().isTransactionActive()) {
-//                if (txObject.getTransactionHolder().getTransaction() != null) {
-//                    log.info("Commit transaction. transaction={}", txObject.getTransactionHolder().getTransaction());
-//                    txObject.getTransactionHolder().getTransaction().commit();
-//                }
-//            }
+        // NOTE: New transaction 이 아니면 commit 하지 않고, Skip 해야 한다.
+        RequeryTransactionObject txObject = (RequeryTransactionObject) status.getTransaction();
+        log.info("doCommit ... txObject={}", txObject);
+        if (txObject.isRollbackOnly()) {
+            return;
+        }
+        try {
+            if (txObject.isNewTransactionHolder()) {
+                if (txObject.hasTransactionHolder() && txObject.getTransactionHolder().isTransactionActive()) {
+                    log.info("Commit transaction. transaction={}", txObject.getTransactionHolder().getTransaction());
+                    txObject.getTransactionHolder().getTransaction().commit();
+                }
+            }
         } catch (Exception ex) {
             throw new TransactionSystemException("Could not commit requery transaction", ex);
         }
     }
 
 
-    //    @Override
+    @Override
     protected void doRollback(@Nonnull final DefaultTransactionStatus status) {
-        log.debug("doRollback ... status={}", status);
+        log.info("doRollback ... status={}", status);
         RequeryTransactionObject txObject = (RequeryTransactionObject) status.getTransaction();
+        log.info("doRollback ... txObject={}", txObject);
         try {
-            log.warn("Rollback transaction!!! transaction={}", txObject.getTransactionHolder().getTransaction());
-            Transaction transaction = txObject.getTransactionHolder().getTransaction();
-            transaction.rollback();
-
-//            if (txObject.hasTransactionHolder() && txObject.getTransactionHolder().isTransactionActive()) {
-//                if (txObject.getTransactionHolder().getTransaction() != null) {
-//                    log.warn("Rollback transaction!!! transaction={}", txObject.getTransactionHolder().getTransaction());
-//                    txObject.getTransactionHolder().getTransaction().rollback();
-//                }
-//            }
+            if (txObject.hasTransactionHolder() && txObject.getTransactionHolder().isTransactionActive()) {
+                if (txObject.getTransactionHolder().getTransaction() != null) {
+                    log.warn("Rollback transaction!!! transaction={}", txObject.getTransactionHolder().getTransaction());
+                    txObject.getTransactionHolder().getTransaction().rollback();
+                }
+            }
         } catch (Exception ex) {
             throw new TransactionSystemException("Could not rollback requery transaction", ex);
         }
     }
 
-    //    @Override
+    @Override
     protected void doSetRollbackOnly(DefaultTransactionStatus status) throws TransactionException {
-        log.debug("Set rollback only ...");
+        log.info("Set rollback only ...");
         RequeryTransactionObject txObject = (RequeryTransactionObject) status.getTransaction();
         txObject.setRollbackOnly();
     }
 
-
     @Nonnull
-//    @Override
+    @Override
     protected Object doSuspend(@Nonnull final Object transaction) {
-        log.debug("Suspend transaction. transaction={}", transaction);
+        log.info("Suspend transaction. transaction={}", transaction);
         return TransactionSynchronizationManager.unbindResource(entityDataStore);
     }
 
-    //    @Override
+    @Override
     protected void doResume(@Nullable final Object transaction,
                             @Nonnull final Object suspendedResources) {
-        log.debug("Resume transaction. transaction={}, suspendedResources={}", transaction, suspendedResources);
+        log.info("Resume transaction. transaction={}, suspendedResources={}", transaction, suspendedResources);
         TransactionSynchronizationManager.bindResource(entityDataStore, suspendedResources);
     }
 
-    //    @Override
+    @Override
     protected void doCleanupAfterCompletion(Object transaction) {
         log.warn("doCleanupAfterCompletion... ");
         RequeryTransactionObject txObject = (RequeryTransactionObject) transaction;
 
-        if (txObject.isNewTransactionHolder() || txObject.getTransactionHolder().isRollbackOnly()) {
-            TransactionSynchronizationManager.unbindResource(entityDataStore);
+        if (txObject.getTransactionHolder().hasTransaction()) {
+            TransactionSynchronizationManager.unbindResourceIfPossible(entityDataStore);
 
             log.warn("Cleanup transaction ...");
-            txObject.getTransactionHolder().getTransaction().rollback();
             txObject.getTransactionHolder().released();
             txObject.getTransactionHolder().clear();
+
         }
     }
 
@@ -223,7 +225,6 @@ public class RequeryTransactionManager extends AbstractRequeryTransactionManager
                 return TransactionIsolation.REPEATABLE_READ;
             case Connection.TRANSACTION_SERIALIZABLE:
                 return TransactionIsolation.SERIALIZABLE;
-
             default:
                 return null;
         }
@@ -234,8 +235,6 @@ public class RequeryTransactionManager extends AbstractRequeryTransactionManager
     public static class RequeryTransactionObject extends RequeryTransactionObjectSupport {
 
         private boolean newTransactionHolder;
-        private boolean mustRestoreAutoCommit;
-
 
         void setTransactionHolder(RequeryTransactionHolder transactionHolder, boolean isNewTransactionHolder) {
             setTransactionHolder(transactionHolder);
@@ -258,6 +257,11 @@ public class RequeryTransactionManager extends AbstractRequeryTransactionManager
             if (TransactionSynchronizationManager.isSynchronizationActive()) {
                 TransactionSynchronizationUtils.triggerFlush();
             }
+        }
+
+        @Override
+        public String toString() {
+            return "newTransactionHolder=" + newTransactionHolder + ",isRollbackOnly=" + isRollbackOnly();
         }
     }
 }

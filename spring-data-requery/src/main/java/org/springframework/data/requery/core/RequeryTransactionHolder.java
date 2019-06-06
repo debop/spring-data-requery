@@ -48,4 +48,9 @@ public class RequeryTransactionHolder extends ResourceHolderSupport {
         super.clear();
         this.transactionActive = false;
     }
+
+    @Override
+    public String toString() {
+        return "TransactionHolder(transaction=" + transaction + ", active=" + isTransactionActive();
+    }
 }

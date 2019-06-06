@@ -19,6 +19,7 @@ package org.springframework.data.requery.repository.sample.basic;
 import org.springframework.data.requery.annotation.Query;
 import org.springframework.data.requery.domain.basic.BasicUser;
 import org.springframework.data.requery.repository.RequeryRepository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -52,6 +53,7 @@ public interface BasicUserRepository extends RequeryRepository<BasicUser, Long> 
             .firstOrNull();
     }
 
+    @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
     @Query("select * from basic_user u where u.email = ?")
     BasicUser findByAnnotatedQuery(String email);
 }

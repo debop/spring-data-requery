@@ -160,16 +160,15 @@ public class TransactionalRepositoryTest {
         @Override
         public void commit(@Nonnull final TransactionStatus status) throws TransactionException {
             DefaultTransactionStatus txStatus = (DefaultTransactionStatus) status;
-//            RequeryTransactionObject txObject = (RequeryTransactionObject)txStatus.getTransaction();
-
-            log.warn("Commit transaction. status transaction={}, isNewTransaction={}", txStatus.getTransaction(), txStatus.isNewTransaction());
-            txManager.commit(status);
+            log.debug("Commit... hasTransaction={}, isRollbackOnly={}", txStatus.hasTransaction(), txStatus.isRollbackOnly());
+            if (!txStatus.isRollbackOnly()) {
+                txManager.commit(status);
+            }
         }
 
         @Override
         public void rollback(@Nonnull final TransactionStatus status) throws TransactionException {
             DefaultTransactionStatus txStatus = (DefaultTransactionStatus) status;
-//            RequeryTransactionObject txObject = (RequeryTransactionObject)txStatus.getTransaction();
             log.warn("Rollback transaction. status transaction={}, isNewTransaction={}", txStatus.getTransaction(), txStatus.isNewTransaction());
             txManager.rollback(status);
         }
